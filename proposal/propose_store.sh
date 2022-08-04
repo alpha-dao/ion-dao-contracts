@@ -11,8 +11,6 @@ NODE=${NODE:-"https://testnet-rpc.osmosis.zone:443"}
 #Mnemonic
 MNEMONIC=${MNEMONIC:-"satisfy adjust timber high purchase tuition stool faith fine install that you unaware feed domain license impose boss human eager hat rent enjoy dawn"} # first default account of local osmosis :)
 
-echo $MNEMONIC
-
 #Delete account if already present
 $DAEMON keys delete "$ACCOUNT" --keyring-backend test -y
 #Mnemonic
@@ -22,13 +20,13 @@ ACCOUNT_ADDRESS=$($DAEMON keys show -a "$ACCOUNT" --keyring-backend test)
 
 #Account Address and Balance
 echo "Balance for $ACCOUNT_ADDRESS"
-$DAEMON query bank balances "$ACCOUNT_ADDRESS" --node "$NODE"
+$DAEMON query bank balances "$ACCOUNT_ADDRESS" --node "$NODE" --output json | jq -c
 
 propose () {
   $DAEMON tx gov submit-proposal wasm-store "$1" --title "$2" --description "$3" \
     --run-as "$ACCOUNT_ADDRESS" \
     --from "$ACCOUNT" --keyring-backend test --chain-id "$CHAIN_ID" -y -b block \
-    --gas 20000000 --gas-prices 0.025uosmo --deposit 500000000uosmo --node "$NODE" --output json \
+    --gas 20000000 --gas-prices 0.025uosmo --deposit 200000000uosmo --node "$NODE" --output json \
     | jq -c '.logs[0].events[] | select(.type | contains("submit_proposal")) | .attributes[] | select(.key | contains("proposal_id")) | .value | tonumber'
 }
 

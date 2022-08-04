@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [[ -z "$DAO_CONTRACT_CODE_ID" ]]
+then
+  echo "You should specify DAO_CONTRACT_CODE_ID environment variable"
+  exit 1
+fi
+
+if [[ -z "$STAKE_CONTRACT_CODE_ID" ]]
+then
+  echo "You should specify STAKE_CONTRACT_CODE_ID environment variable"
+  exit 1
+fi
+
 #Executable
 DAEMON=${DAEMON:-"osmosisd"}
 #CHAIN ID
@@ -20,7 +32,7 @@ ACCOUNT_ADDRESS=$($DAEMON keys show -a "$ACCOUNT" --keyring-backend test)
 
 #Account Address and Balance
 echo "Balance for $ACCOUNT_ADDRESS"
-$DAEMON query bank balances "$ACCOUNT_ADDRESS" --node "$NODE"
+$DAEMON query bank balances "$ACCOUNT_ADDRESS" --node "$NODE" --output json | jq -c
 
 propose () {
   $DAEMON tx gov submit-proposal instantiate-contract "$1" "$2" --title "$3" --description "$4" \
@@ -30,9 +42,7 @@ propose () {
 }
 
 ##Submit proposal and store wasm binary including a deposit amount
-STAKE_CONTRACT_CODE_ID="12345" # describe it!
-DAO_CONTRACT_CODE_ID="12345" # describe it!
-DAO_CONTRACT_INIT_MSG=$(cat ./proposal/init_dao.json | jq -c '.gov_token.stake_contract_code_id = '$STAKE_CONTRACT_CODE_ID)
+DAO_CONTRACT_INIT_MSG=$(cat ./proposal/init_dao.json | jq -c '.gov_token.stake_contract_code_id = '"$STAKE_CONTRACT_CODE_ID")
 DAO_PROPOSAL_DESC=$(cat ./proposal/init_dao.md)
 DAO_PROPOSAL=$(propose "$DAO_CONTRACT_CODE_ID" "$DAO_CONTRACT_INIT_MSG" "[ION DAO] Initialize" "$DAO_PROPOSAL_DESC")
 echo "Proposal for dao contract has been submitted. Prop ID $DAO_PROPOSAL"
