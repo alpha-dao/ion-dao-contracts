@@ -17,7 +17,7 @@ Checksum of the contracts are following.
 eadc37723e0e88223eb979061027b3e9a80c7b52ea368d05daff742a42f75b8a  ion_stake.wasm
 ```
 
-## Compiled with Docker
+### Compiled with Docker
 ```
 # Intermediate
 8af84588ed32925dfe57d070113d93fe54bf7ea4ac6c894c547c8bbfe2cbbac5  target/wasm32-unknown-unknown/release/ion_dao.wasm
