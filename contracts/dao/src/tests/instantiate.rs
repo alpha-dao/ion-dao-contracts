@@ -212,6 +212,6 @@ fn should_fail_if_period_is_invalid() {
         let err = app
             .instantiate_contract(dao_code_id, maker.clone(), &init_msg, &[], "new_dao", None)
             .unwrap_err();
-        assert_eq!(ContractError::Unauthorized {}, err.downcast().unwrap());
+        assert_eq!(ContractError::InvalidPeriod {}, err.downcast().unwrap());
     }
 }
