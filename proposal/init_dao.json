@@ -2,10 +2,14 @@
   "name": "ION DAO",
   "description": "DAO of the ION holders",
   "gov_token": {
-    "denom": "uion",
-    "label": "ION staking contract for governance",
-    "stake_contract_code_id": 0,
-    "unstaking_duration": { "time": 3600 }
+    "create": {
+      "denom": "uion",
+      "label": "ION staking contract for governance",
+      "stake_contract_code_id": 0,
+      "unstaking_duration": {
+        "time": 3600
+      }
+    }
   },
   "threshold": {
     "quorum": "0.3",

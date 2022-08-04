@@ -31,6 +31,7 @@ propose () {
 }
 
 #Submit proposal and store wasm binary including a deposit amount
+
 STAKE_PROPOSAL_DESC=$(cat ./proposal/store_stake.md)
 STAKE_PROPOSAL=$(propose "./artifacts/ion_stake.wasm" "[ION DAO] Store staking contract's code" "$STAKE_PROPOSAL_DESC")
 echo "Proposal for staking contract has been submitted. Prop ID $STAKE_PROPOSAL"
