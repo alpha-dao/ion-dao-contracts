@@ -18,17 +18,19 @@ DAEMON=${DAEMON:-"osmosisd"}
 CHAIN_ID=${CHAIN_ID:-"osmo-test-4"}
 #Signer
 ACCOUNT=${ACCOUNT:-"tester"}
+#Keyring
+KEYRING=${KEYRING:-"test"}
 #Node
 NODE=${NODE:-"https://testnet-rpc.osmosis.zone:443"}
 #Mnemonic
 MNEMONIC=${MNEMONIC:-"satisfy adjust timber high purchase tuition stool faith fine install that you unaware feed domain license impose boss human eager hat rent enjoy dawn"} # first default account of local osmosis :)
 
 #Delete account if already present
-$DAEMON keys delete "$ACCOUNT" --keyring-backend test -y
+$DAEMON keys delete "$ACCOUNT" --keyring-backend "$KEYRING" -y
 #Mnemonic
-echo "$MNEMONIC" | $DAEMON keys add "$ACCOUNT" --keyring-backend test --recover
+echo "$MNEMONIC" | $DAEMON keys add "$ACCOUNT" --keyring-backend "$KEYRING" --recover
 #Account Address
-ACCOUNT_ADDRESS=$($DAEMON keys show -a "$ACCOUNT" --keyring-backend test)
+ACCOUNT_ADDRESS=$($DAEMON keys show -a "$ACCOUNT" --keyring-backend "$KEYRING")
 
 #Account Address and Balance
 echo "Balance for $ACCOUNT_ADDRESS"
@@ -37,7 +39,7 @@ $DAEMON query bank balances "$ACCOUNT_ADDRESS" --node "$NODE" --output json | jq
 propose () {
   $DAEMON tx gov submit-proposal instantiate-contract "$1" "$2" --label "ION governance contract" --no-admin --title "$3" --description "$4" \
     --run-as "$ACCOUNT_ADDRESS" \
-    --from "$ACCOUNT" --keyring-backend test --chain-id "$CHAIN_ID" -y -b block \
+    --from "$ACCOUNT" --keyring-backend "$KEYRING" --chain-id "$CHAIN_ID" -y -b block \
     --gas 20000000 --gas-prices 0.025uosmo --deposit 500000000uosmo --node "$NODE" --output json
 }
 
