@@ -82,7 +82,7 @@ pub const IDX_DEPOSITS_BY_DEPOSITOR: Map<(Addr, u64), Empty> =
 pub const PROPOSALS: Map<u64, Proposal> = Map::new("proposals");
 pub const IDX_PROPS_BY_STATUS: Map<(u8, u64), Empty> = Map::new("idx_props_by_status");
 pub const IDX_PROPS_BY_PROPOSER: Map<(Addr, u64), Empty> = Map::new("idx_props_by_proposer");
-pub const TREASURY_TOKENS: Map<(&str, &str), Empty> = Map::new("treasury_tokens"); // token_type => token_{denom / address} => Empty
+pub const TREASURY_TOKENS: Map<&str, Empty> = Map::new("treasury_tokens"); // token_denom => Empty
 
 pub fn next_id(store: &mut dyn Storage) -> StdResult<u64> {
     let id: u64 = PROPOSAL_COUNT.may_load(store)?.unwrap_or_default() + 1;

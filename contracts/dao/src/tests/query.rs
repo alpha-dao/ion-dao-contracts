@@ -2,10 +2,9 @@ use crate::msg::{GovToken, RangeOrder};
 use crate::state::{Config, Threshold};
 use crate::tests::suite::{Suite, SuiteBuilder};
 
-use cosmwasm_std::{coins, Addr, Decimal, Uint128};
-use cw20::{Balance, Cw20CoinVerified, Denom};
+use cosmwasm_std::{coin, Addr, Decimal, Uint128};
 use cw3::{Status, Vote};
-use cw_utils::{Duration, NativeBalance};
+use cw_utils::Duration;
 
 #[test]
 fn test_get_config() {
@@ -54,15 +53,12 @@ fn test_token_list() {
     let dao = suite.dao.clone();
 
     let resp = suite.query_token_list().unwrap();
-    assert_eq!(resp.token_list, vec![Denom::Native("denom".to_string())]);
+    assert_eq!(resp.token_list, vec!["denom".to_string()]);
 
     suite
         .update_token_list(
             dao.as_str(),
-            vec![
-                Denom::Cw20(Addr::unchecked("cw20")),
-                Denom::Native("native-1".to_string()),
-            ],
+            vec!["native-2".to_string(), "native-1".to_string()],
             vec![],
         )
         .unwrap();
@@ -71,9 +67,9 @@ fn test_token_list() {
     assert_eq!(
         resp.token_list,
         vec![
-            Denom::Cw20(Addr::unchecked("cw20")),
-            Denom::Native("denom".to_string()),
-            Denom::Native("native-1".to_string()),
+            "denom".to_string(),
+            "native-1".to_string(),
+            "native-2".to_string(),
         ]
     );
 }
@@ -90,10 +86,10 @@ fn test_token_balances() {
         .update_token_list(
             dao.as_str(),
             vec![
-                Denom::Cw20(Addr::unchecked("cw20-1")),
-                Denom::Cw20(Addr::unchecked("cw20-2")),
-                Denom::Native("native-1".to_string()),
-                Denom::Native("native-2".to_string()),
+                "native-3".to_string(),
+                "native-4".to_string(),
+                "native-1".to_string(),
+                "native-2".to_string(),
             ],
             vec![],
         )
@@ -103,17 +99,11 @@ fn test_token_balances() {
     assert_eq!(
         resp.balances,
         vec![
-            Balance::Cw20(Cw20CoinVerified {
-                address: Addr::unchecked("cw20-1"),
-                amount: Uint128::new(0),
-            }),
-            Balance::Cw20(Cw20CoinVerified {
-                address: Addr::unchecked("cw20-2"),
-                amount: Uint128::new(0),
-            }),
-            Balance::Native(NativeBalance(coins(0, "denom"))),
-            Balance::Native(NativeBalance(coins(0, "native-1"))),
-            Balance::Native(NativeBalance(coins(0, "native-2"))),
+            coin(0, "denom"),
+            coin(0, "native-1"),
+            coin(0, "native-2"),
+            coin(0, "native-3"),
+            coin(0, "native-4"),
         ]
     );
 }

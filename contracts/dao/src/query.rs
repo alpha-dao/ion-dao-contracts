@@ -1,7 +1,6 @@
-use cosmwasm_std::{Addr, Env, Order, StdError, StdResult, Uint128};
-use cw20::{Balance, BalanceResponse, Cw20CoinVerified, Cw20QueryMsg, Denom};
+use cosmwasm_std::{Addr, Coin, Env, Order, StdResult};
 use cw_storage_plus::Bound;
-use cw_utils::{maybe_addr, NativeBalance};
+use cw_utils::maybe_addr;
 use osmo_bindings::OsmosisMsg;
 
 use crate::helpers::{get_and_check_limit, proposal_to_response};
@@ -17,40 +16,8 @@ use crate::state::{
 };
 use crate::{Deps, QuerierWrapper, DEFAULT_LIMIT, MAX_LIMIT};
 
-fn query_balance_with_asset_type(
-    querier: QuerierWrapper,
-    env: Env,
-    asset_type: &str,
-    value: &str,
-) -> StdResult<Balance> {
-    match asset_type {
-        "native" => {
-            let balance_resp = querier.query_balance(env.contract.address, value).unwrap();
-
-            Ok(Balance::Native(NativeBalance(vec![balance_resp])))
-        }
-        "cw20" => {
-            let balance_resp: BalanceResponse = querier
-                .query_wasm_smart(
-                    value,
-                    &Cw20QueryMsg::Balance {
-                        address: env.contract.address.to_string(),
-                    },
-                )
-                .unwrap_or(BalanceResponse {
-                    balance: Uint128::zero(),
-                });
-
-            Ok(Balance::Cw20(Cw20CoinVerified {
-                address: Addr::unchecked(value),
-                amount: balance_resp.balance,
-            }))
-        }
-        _ => Err(StdError::generic_err(format!(
-            "invalid asset type {}",
-            asset_type
-        ))),
-    }
+fn query_balance(querier: &QuerierWrapper, address: &Addr, denom: &str) -> StdResult<Coin> {
+    querier.query_balance(address, denom)
 }
 
 pub fn config(deps: Deps) -> StdResult<ConfigResponse> {
@@ -65,56 +32,44 @@ pub fn config(deps: Deps) -> StdResult<ConfigResponse> {
     })
 }
 
-pub fn token_list(deps: Deps) -> TokenListResponse {
-    let token_list: Vec<Denom> = TREASURY_TOKENS
+pub fn token_list(deps: Deps) -> StdResult<TokenListResponse> {
+    let token_list = TREASURY_TOKENS
         .keys(deps.storage, None, None, Order::Ascending)
-        .map(|item| -> Denom {
-            let (k1, k2) = item.unwrap();
-            match k1.as_str() {
-                "native" => Denom::Native(k2),
-                "cw20" => Denom::Cw20(deps.api.addr_validate(k2.as_str()).unwrap()),
-                _ => panic!("invalid asset type {}", k1),
-            }
-        })
-        .collect();
+        .collect::<StdResult<Vec<_>>>()?;
 
-    TokenListResponse { token_list }
+    Ok(TokenListResponse { token_list })
 }
 
 pub fn token_balances(
     deps: Deps,
     env: Env,
-    start: Option<Denom>,
+    start: Option<String>,
     limit: Option<u32>,
     order: Option<RangeOrder>,
 ) -> StdResult<TokenBalancesResponse> {
     let limit = get_and_check_limit(limit, MAX_LIMIT, DEFAULT_LIMIT)? as usize;
     let order = order.unwrap_or(RangeOrder::Asc).into();
-    let start = start.map(|v| match v {
-        Denom::Native(denom) => ("native", denom),
-        Denom::Cw20(addr) => ("cw20", addr.to_string()),
-    });
 
-    let store = deps.storage;
-    let querier = deps.querier;
-    let balances: StdResult<Vec<_>> = if let Some((prefix, start)) = start {
+    let balances: StdResult<Vec<Coin>> = if let Some(start) = start {
         let (min, max) = match order {
             Order::Ascending => (Some(Bound::<&str>::exclusive(start.as_str())), None),
             Order::Descending => (None, Some(Bound::<&str>::exclusive(start.as_str()))),
         };
         TREASURY_TOKENS
-            .prefix(prefix)
-            .keys(store, min, max, order)
+            .keys(deps.storage, min, max, order)
             .take(limit)
-            .map(|v| query_balance_with_asset_type(querier, env.clone(), prefix, v?.as_str()))
+            .map(|k| {
+                let denom = k?;
+                query_balance(&deps.querier, &env.contract.address, &denom)
+            })
             .collect()
     } else {
         TREASURY_TOKENS
-            .keys(store, None, None, order)
+            .keys(deps.storage, None, None, order)
             .take(limit)
-            .map(|item| {
-                let (k1, k2) = item?;
-                query_balance_with_asset_type(querier, env.clone(), &k1, &k2)
+            .map(|k| {
+                let denom = k?;
+                query_balance(&deps.querier, &env.contract.address, &denom)
             })
             .collect()
     };

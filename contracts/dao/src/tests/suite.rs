@@ -2,7 +2,6 @@ use std::borrow::{Borrow, BorrowMut};
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coins, Addr, CosmosMsg, Decimal, StdResult, Uint128};
-use cw20::Denom;
 use cw3::Vote;
 use cw_multi_test::{AppResponse, BankSudo, Contract, ContractWrapper, Executor, SudoMsg};
 use cw_utils::{Duration, Expiration};
@@ -478,8 +477,8 @@ impl Suite {
     pub fn update_token_list(
         &mut self,
         updater: &str,
-        to_add: Vec<Denom>,
-        to_remove: Vec<Denom>,
+        to_add: Vec<String>,
+        to_remove: Vec<String>,
     ) -> AnyResult<AppResponse> {
         self.app.borrow_mut().execute_contract(
             Addr::unchecked(updater),
@@ -509,7 +508,7 @@ impl Suite {
 
     pub fn query_token_balances(
         &self,
-        start: Option<Denom>,
+        start: Option<String>,
         limit: Option<u32>,
         order: Option<RangeOrder>,
     ) -> StdResult<crate::msg::TokenBalancesResponse> {

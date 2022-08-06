@@ -3,7 +3,6 @@ use std::ops::Add;
 use cosmwasm_std::{
     coins, Addr, BankMsg, BlockInfo, Empty, Env, MessageInfo, StdError, StdResult, Storage, Uint128,
 };
-use cw20::Denom;
 use cw3::{Status, Vote};
 use cw_utils::{may_pay, Expiration};
 
@@ -465,8 +464,8 @@ pub fn update_token_list(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    to_add: Vec<Denom>,
-    to_remove: Vec<Denom>,
+    to_add: Vec<String>,
+    to_remove: Vec<String>,
 ) -> Result<Response, ContractError> {
     // Only contract can call this method
     if env.contract.address != info.sender {
@@ -482,26 +481,12 @@ pub fn update_token_list(
         });
     }
 
-    for token in &to_add {
-        match token {
-            Denom::Native(native_denom) => {
-                TREASURY_TOKENS.save(deps.storage, ("native", native_denom.as_str()), &Empty {})?
-            }
-            Denom::Cw20(cw20_addr) => {
-                TREASURY_TOKENS.save(deps.storage, ("cw20", cw20_addr.as_str()), &Empty {})?
-            }
-        }
+    for denom in &to_add {
+        TREASURY_TOKENS.save(deps.storage, &denom, &Empty {})?;
     }
 
-    for token in &to_remove {
-        match token {
-            Denom::Native(native_denom) => {
-                TREASURY_TOKENS.remove(deps.storage, ("native", native_denom.as_str()))
-            }
-            Denom::Cw20(cw20_addr) => {
-                TREASURY_TOKENS.remove(deps.storage, ("cw20", cw20_addr.as_str()))
-            }
-        }
+    for denom in &to_remove {
+        TREASURY_TOKENS.remove(deps.storage, &denom);
     }
 
     Ok(Response::new().add_attribute("action", "update_cw20_token_list"))

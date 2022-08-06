@@ -18,7 +18,7 @@
     },
     {
       "title": "TokenList",
-      "description": "Queries list of cw20 Tokens associated with the DAO Treasury. Returns [TokenListResponse]\n\n## Example\n\n```json { \"token_list\": {} } ```",
+      "description": "Queries list of native Tokens associated with the DAO Treasury. Returns [TokenListResponse]\n\n## Example\n\n```json { \"token_list\": {} } ```",
       "type": "object",
       "required": [
         "token_list"
@@ -32,7 +32,7 @@
     },
     {
       "title": "TokenBalances",
-      "description": "Returns [TokenBalancesResponse] All DAO Cw20 Balances\n\n## Example\n\n```json { \"token_balances\": { \"start\"?: { \"native\": \"uosmo\" | \"cw20\": \"osmo1deadbeef\" }, \"limit\": 30 | 10, \"order\": \"asc\" | \"desc\" } } ```",
+      "description": "Returns [TokenBalancesResponse] All DAO native token Balances\n\n## Example\n\n```json { \"token_balances\": { \"start\"?: \"uosmo\", \"limit\": 30 | 10, \"order\": \"asc\" | \"desc\" } } ```",
       "type": "object",
       "required": [
         "token_balances"
@@ -60,13 +60,9 @@
               ]
             },
             "start": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/Denom"
-                },
-                {
-                  "type": "null"
-                }
+              "type": [
+                "string",
+                "null"
               ]
             }
           }
@@ -309,34 +305,6 @@
     "Addr": {
       "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
       "type": "string"
-    },
-    "Denom": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "native"
-          ],
-          "properties": {
-            "native": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": [
-            "cw20"
-          ],
-          "properties": {
-            "cw20": {
-              "$ref": "#/definitions/Addr"
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "DepositsQueryOption": {
       "oneOf": [

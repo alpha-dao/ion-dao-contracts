@@ -1,7 +1,6 @@
 use std::fmt;
 
-use cosmwasm_std::{Addr, CosmosMsg, Decimal, Empty, Order, Uint128};
-use cw20::{Balance, Denom};
+use cosmwasm_std::{Addr, Coin, CosmosMsg, Decimal, Empty, Order, Uint128};
 use cw3::{Status, Vote};
 use cw_utils::{Duration, Expiration};
 use osmo_bindings::OsmosisMsg;
@@ -89,8 +88,8 @@ pub enum ExecuteMsg {
     UpdateConfig(Config),
     /// Updates token list
     UpdateTokenList {
-        to_add: Vec<Denom>,
-        to_remove: Vec<Denom>,
+        to_add: Vec<String>,
+        to_remove: Vec<String>,
     },
     /// Update Staking Contract (can only be called by DAO contract)
     /// WARNING: this changes the contract controlling voting
@@ -157,7 +156,7 @@ pub enum QueryMsg {
 
     /// # TokenList
     ///
-    /// Queries list of cw20 Tokens associated with the DAO Treasury.  
+    /// Queries list of native Tokens associated with the DAO Treasury.
     /// Returns [TokenListResponse]
     ///
     /// ## Example
@@ -172,23 +171,21 @@ pub enum QueryMsg {
     /// # TokenBalances
     ///
     /// Returns [TokenBalancesResponse]
-    /// All DAO Cw20 Balances
+    /// All DAO native token Balances
     ///
     /// ## Example
     ///
     /// ```json
     /// {
     ///   "token_balances": {
-    ///     "start"?: {
-    ///       "native": "uosmo" | "cw20": "osmo1deadbeef"
-    ///     },
+    ///     "start"?: "uosmo",
     ///     "limit": 30 | 10,
     ///     "order": "asc" | "desc"
     ///   }
     /// }
     /// ```
     TokenBalances {
-        start: Option<Denom>,
+        start: Option<String>,
         limit: Option<u32>,
         order: Option<RangeOrder>,
     },
@@ -350,12 +347,12 @@ pub struct ConfigResponse {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
 pub struct TokenListResponse {
-    pub token_list: Vec<Denom>,
+    pub token_list: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
 pub struct TokenBalancesResponse {
-    pub balances: Vec<Balance>,
+    pub balances: Vec<Coin>,
 }
 
 /// Note, if you are storing custom messages in the proposal,

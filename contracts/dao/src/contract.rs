@@ -50,7 +50,7 @@ pub fn instantiate(
             unstaking_duration,
         } => {
             // Add native token to map of TREASURY TOKENS
-            TREASURY_TOKENS.save(deps.storage, ("native", denom.as_str()), &Empty {})?;
+            TREASURY_TOKENS.save(deps.storage, &denom, &Empty {})?;
 
             // Save gov token
             GOV_TOKEN.save(deps.storage, &denom)?;
@@ -78,11 +78,7 @@ pub fn instantiate(
 
             let staking_config = get_config(deps.as_ref())?;
             // Add native token to map of TREASURY TOKENS
-            TREASURY_TOKENS.save(
-                deps.storage,
-                ("native", staking_config.denom.as_str()),
-                &Empty {},
-            )?;
+            TREASURY_TOKENS.save(deps.storage, &staking_config.denom, &Empty {})?;
 
             // Save gov token
             GOV_TOKEN.save(deps.storage, &staking_config.denom)?;
@@ -129,7 +125,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
     match msg {
         GetConfig {} => to_binary(&query::config(deps)?),
-        TokenList {} => to_binary(&query::token_list(deps)),
+        TokenList {} => to_binary(&query::token_list(deps)?),
         TokenBalances {
             start,
             limit,

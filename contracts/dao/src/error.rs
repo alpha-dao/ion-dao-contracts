@@ -22,9 +22,6 @@ pub enum ContractError {
     #[error("Invalid voting / deposit period")]
     InvalidPeriod {},
 
-    #[error("Cw20 contract invalid address '{addr}'")]
-    InvalidCw20 { addr: String },
-
     #[error("Unauthorized")]
     Unauthorized {},
 
