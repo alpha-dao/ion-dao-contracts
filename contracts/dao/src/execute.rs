@@ -47,7 +47,7 @@ fn create_proposal(
 ) -> StdResult<()> {
     PROPOSALS.save(storage, prop_id, proposal)?;
     IDX_PROPS_BY_STATUS.save(storage, (proposal.status as u8, prop_id), &Empty {})?;
-    IDX_PROPS_BY_PROPOSER.save(storage, (&proposer, prop_id), &Empty {})?;
+    IDX_PROPS_BY_PROPOSER.save(storage, (proposer, prop_id), &Empty {})?;
 
     Ok(())
 }
@@ -60,15 +60,15 @@ fn create_deposit(
 ) -> StdResult<()> {
     // deposit
     let mut deposit = DEPOSITS
-        .may_load(storage, (prop_id, &depositor))?
+        .may_load(storage, (prop_id, depositor))?
         .unwrap_or_default();
     if deposit.amount.is_zero() {
-        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (&depositor, prop_id), &Empty {})?;
+        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (depositor, prop_id), &Empty {})?;
     }
 
     deposit.amount = deposit.amount.checked_add(*amount)?;
 
-    DEPOSITS.save(storage, (prop_id, &depositor), &deposit)?;
+    DEPOSITS.save(storage, (prop_id, depositor), &deposit)?;
 
     Ok(())
 }
@@ -479,11 +479,11 @@ pub fn update_token_list(
     }
 
     for denom in &to_add {
-        TREASURY_TOKENS.save(deps.storage, &denom, &Empty {})?;
+        TREASURY_TOKENS.save(deps.storage, denom, &Empty {})?;
     }
 
     for denom in &to_remove {
-        TREASURY_TOKENS.remove(deps.storage, &denom);
+        TREASURY_TOKENS.remove(deps.storage, denom);
     }
 
     Ok(Response::new().add_attribute("action", "update_cw20_token_list"))
