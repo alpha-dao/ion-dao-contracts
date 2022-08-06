@@ -1,6 +1,4 @@
-import { Denom } from "./shared-types";
-
 export interface TokenListResponse {
-  token_list: Denom[];
+  token_list: string[];
   [k: string]: unknown;
 }

@@ -1,6 +1,5 @@
 import {
   Addr,
-  Denom,
   Proposal_1,
   RangeOrder,
   Status,
@@ -76,7 +75,7 @@ export interface GetConfig {
   };
 }
 /**
- * Queries list of cw20 Tokens associated with the DAO Treasury. Returns [TokenListResponse]
+ * Queries list of native Tokens associated with the DAO Treasury. Returns [TokenListResponse]
  *
  * ## Example
  *
@@ -88,17 +87,17 @@ export interface TokenList {
   };
 }
 /**
- * Returns [TokenBalancesResponse] All DAO Cw20 Balances
+ * Returns [TokenBalancesResponse] All DAO native token Balances
  *
  * ## Example
  *
- * ```json { "token_balances": { "start"?: { "native": "uosmo" | "cw20": "osmo1deadbeef" }, "limit": 30 | 10, "order": "asc" | "desc" } } ```
+ * ```json { "token_balances": { "start"?: "uosmo", "limit": 30 | 10, "order": "asc" | "desc" } } ```
  */
 export interface TokenBalances {
   token_balances: {
     limit?: number | null;
     order?: RangeOrder | null;
-    start?: Denom | null;
+    start?: string | null;
     [k: string]: unknown;
   };
 }
