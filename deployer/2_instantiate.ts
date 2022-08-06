@@ -58,11 +58,12 @@ async function main() {
 
   console.log({ contractAddress: daoAddress, transactionHash });
 
-  const configResp: dao.ConfigResponse = await cfg.cosmwasm.queryContractSmart(
+  const queryContractSmart = <T, U>(addr: string, input: T): Promise<U> =>
+    cfg.cosmwasm.queryContractSmart(addr, input as any);
+
+  const configResp = await queryContractSmart<dao.QueryMsg, dao.ConfigResponse>(
     daoAddress,
-    {
-      get_config: {},
-    }
+    { get_config: {} }
   );
 
   const stakeAddress = configResp.staking_contract;

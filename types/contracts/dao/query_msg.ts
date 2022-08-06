@@ -54,6 +54,10 @@ export type DepositsQueryOption =
     }
   | {
       everything: {
+        /**
+         * @minItems 2
+         * @maxItems 2
+         */
         start?: [number, string] | null;
         [k: string]: unknown;
       };

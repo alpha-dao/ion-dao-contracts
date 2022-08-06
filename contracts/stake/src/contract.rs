@@ -1,18 +1,18 @@
-use cosmwasm_std::{
-    Addr, BankMsg, Binary, coins, Env, MessageInfo, StdError, StdResult, to_binary, Uint128,
-};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
+use cosmwasm_std::{
+    coins, to_binary, Addr, BankMsg, Binary, Env, MessageInfo, StdError, StdResult, Uint128,
+};
 use cw2::set_contract_version;
 use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 
-use crate::ContractError;
 use crate::msg::{
     ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg,
     StakedBalanceAtHeightResponse, StakedValueResponse, TotalStakedAtHeightResponse,
     TotalValueResponse,
 };
-use crate::state::{BALANCE, CLAIMS, Config, CONFIG, MAX_CLAIMS, STAKED_BALANCES, STAKED_TOTAL};
+use crate::state::{Config, BALANCE, CLAIMS, CONFIG, MAX_CLAIMS, STAKED_BALANCES, STAKED_TOTAL};
+use crate::ContractError;
 
 /// type aliases
 pub type Response = cosmwasm_std::Response<OsmosisMsg>;
