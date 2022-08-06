@@ -78,10 +78,10 @@ fn make_deposit_claimable(
     prop_id: u64,
     proposal: &mut Proposal,
 ) -> StdResult<()> {
-    PROPOSALS.update(storage, prop_id, |v| -> StdResult<Proposal> {
-        let mut v = v.unwrap();
-        v.deposit_claimable = true;
-        Ok(v)
+    PROPOSALS.update(storage, prop_id, |prop| -> StdResult<_> {
+        let mut prop = prop.ok_or_else(|| StdError::not_found("proposal"))?;
+        prop.deposit_claimable = true;
+        Ok(prop)
     })?;
     proposal.deposit_claimable = true;
 
@@ -96,13 +96,10 @@ fn update_proposal_status(
 ) -> StdResult<()> {
     let before = proposal.status;
     proposal.status = desired;
-    PROPOSALS.update(storage, prop_id, |prop| {
-        if let Some(mut prop) = prop {
-            prop.status = desired;
-            Ok(prop)
-        } else {
-            Err(StdError::not_found("proposal"))
-        }
+    PROPOSALS.update(storage, prop_id, |prop| -> StdResult<_> {
+        let mut prop = prop.ok_or_else(|| StdError::not_found("proposal"))?;
+        prop.status = desired;
+        Ok(prop)
     })?;
     IDX_PROPS_BY_STATUS.remove(storage, (before as u8, prop_id));
     IDX_PROPS_BY_STATUS.save(storage, (desired as u8, prop_id), &Empty {})?;
@@ -303,9 +300,9 @@ pub fn vote(
 
     let ballot = BALLOTS.may_load(deps.storage, (prop_id, &info.sender))?;
     if let Some(ballot) = ballot {
-        prop.votes.revoke(ballot.vote, ballot.weight);
+        prop.votes.revoke(ballot.vote, ballot.weight)?;
     }
-    prop.votes.submit(vote, vote_power);
+    prop.votes.submit(vote, vote_power)?;
 
     BALLOTS.save(
         deps.storage,

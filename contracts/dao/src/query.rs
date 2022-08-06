@@ -50,7 +50,7 @@ pub fn token_balances(
     let limit = get_and_check_limit(limit, MAX_LIMIT, DEFAULT_LIMIT)? as usize;
     let order = order.unwrap_or(RangeOrder::Asc).into();
 
-    let balances: StdResult<Vec<Coin>> = if let Some(start) = start {
+    let balances: StdResult<Vec<_>> = if let Some(start) = start {
         let (min, max) = match order {
             Order::Ascending => (Some(Bound::<&str>::exclusive(start.as_str())), None),
             Order::Descending => (None, Some(Bound::<&str>::exclusive(start.as_str()))),
@@ -105,11 +105,11 @@ pub fn proposals(
             .range(deps.storage, min, max, order)
             .take(limit)
             .map(|item| {
-                let (k, _) = item.unwrap();
+                let (k, _) = item?;
                 Ok(proposal_to_response(
                     &env.block,
                     k,
-                    PROPOSALS.load(deps.storage, k).unwrap(),
+                    PROPOSALS.load(deps.storage, k)?,
                 ))
             })
             .collect(),
@@ -118,11 +118,11 @@ pub fn proposals(
             .range(deps.storage, min, max, order)
             .take(limit)
             .map(|item| {
-                let (k, _) = item.unwrap();
+                let (k, _) = item?;
                 Ok(proposal_to_response(
                     &env.block,
                     k,
-                    PROPOSALS.load(deps.storage, k).unwrap(),
+                    PROPOSALS.load(deps.storage, k)?,
                 ))
             })
             .collect(),
@@ -130,7 +130,7 @@ pub fn proposals(
             .range_raw(deps.storage, min, max, order)
             .take(limit)
             .map(|item| {
-                let (k, prop) = item.unwrap();
+                let (k, prop) = item?;
                 Ok(proposal_to_response(
                     &env.block,
                     parse_id(k.as_slice())?,

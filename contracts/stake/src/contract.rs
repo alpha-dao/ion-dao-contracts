@@ -58,12 +58,12 @@ pub fn execute(
     match msg {
         ExecuteMsg::Stake {} => {
             let denom = CONFIG.load(deps.storage)?.denom;
-            let received = cw_utils::may_pay(&info, denom.as_str()).unwrap();
+            let received = cw_utils::may_pay(&info, denom.as_str())?;
             execute_stake(deps, env, &info.sender, received)
         }
         ExecuteMsg::Fund {} => {
             let denom = CONFIG.load(deps.storage)?.denom;
-            let received = cw_utils::may_pay(&info, denom.as_str()).unwrap();
+            let received = cw_utils::may_pay(&info, denom.as_str())?;
             execute_fund(deps, env, &info.sender, received)
         }
         ExecuteMsg::Unstake { amount } => execute_unstake(deps, env, info, amount),
