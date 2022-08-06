@@ -47,7 +47,7 @@ fn create_proposal(
 ) -> StdResult<()> {
     PROPOSALS.save(storage, prop_id, proposal)?;
     IDX_PROPS_BY_STATUS.save(storage, (proposal.status as u8, prop_id), &Empty {})?;
-    IDX_PROPS_BY_PROPOSER.save(storage, (proposer.clone(), prop_id), &Empty {})?;
+    IDX_PROPS_BY_PROPOSER.save(storage, (&proposer, prop_id), &Empty {})?;
 
     Ok(())
 }
@@ -60,15 +60,15 @@ fn create_deposit(
 ) -> StdResult<()> {
     // deposit
     let mut deposit = DEPOSITS
-        .may_load(storage, (prop_id, depositor.clone()))?
+        .may_load(storage, (prop_id, &depositor))?
         .unwrap_or_default();
     if deposit.amount.is_zero() {
-        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (depositor.clone(), prop_id), &Empty {})?;
+        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (&depositor, prop_id), &Empty {})?;
     }
 
     deposit.amount = deposit.amount.checked_add(*amount)?;
 
-    DEPOSITS.save(storage, (prop_id, depositor.clone()), &deposit)?;
+    DEPOSITS.save(storage, (prop_id, &depositor), &deposit)?;
 
     Ok(())
 }
@@ -250,13 +250,13 @@ pub fn claim_deposit(
         return Err(ContractError::DepositNotClaimable {});
     }
 
-    let mut deposit = DEPOSITS.load(deps.storage, (prop_id, info.sender.clone()))?;
+    let mut deposit = DEPOSITS.load(deps.storage, (prop_id, &info.sender))?;
     if deposit.claimed {
         return Err(ContractError::DepositAlreadyClaimed {});
     }
     deposit.claimed = true;
 
-    DEPOSITS.save(deps.storage, (prop_id, info.sender.clone()), &deposit)?;
+    DEPOSITS.save(deps.storage, (prop_id, &info.sender), &deposit)?;
 
     let gov_token = GOV_TOKEN.load(deps.storage)?;
 
@@ -557,7 +557,7 @@ mod test {
 
         assert!(PROPOSALS.has(&storage, 1));
         assert!(IDX_PROPS_BY_STATUS.has(&storage, (Status::Pending as u8, 1)));
-        assert!(IDX_PROPS_BY_PROPOSER.has(&storage, (proposer.clone(), 1)));
+        assert!(IDX_PROPS_BY_PROPOSER.has(&storage, (&proposer, 1)));
     }
 
     #[test]
@@ -574,23 +574,23 @@ mod test {
         // initial
         super::create_deposit(&mut storage, 1, &depositor, &Uint128::from(10u128)).unwrap();
         assert_eq!(
-            DEPOSITS.load(&storage, (1, depositor.clone())).unwrap(),
+            DEPOSITS.load(&storage, (1, &depositor)).unwrap(),
             Deposit {
                 amount: Uint128::from(10u128),
                 claimed: false
             },
         );
-        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (depositor.clone(), 1)));
+        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (&depositor, 1)));
 
         super::create_deposit(&mut storage, 1, &depositor, &Uint128::from(10u128)).unwrap();
         assert_eq!(
-            DEPOSITS.load(&storage, (1, depositor.clone())).unwrap(),
+            DEPOSITS.load(&storage, (1, &depositor)).unwrap(),
             Deposit {
                 amount: Uint128::from(20u128),
                 claimed: false
             },
         );
-        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (depositor.clone(), 1)));
+        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (&depositor, 1)));
     }
 
     #[test]

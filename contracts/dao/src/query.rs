@@ -114,7 +114,7 @@ pub fn proposals(
             })
             .collect(),
         ProposalsQueryOption::FindByProposer { proposer } => IDX_PROPS_BY_PROPOSER
-            .prefix(proposer)
+            .prefix(&proposer)
             .range(deps.storage, min, max, order)
             .take(limit)
             .map(|item| {
@@ -193,7 +193,7 @@ pub fn votes(
 
 pub fn deposit(deps: Deps, proposal_id: u64, depositor: String) -> StdResult<DepositResponse> {
     let depositor = deps.api.addr_validate(depositor.as_str())?;
-    let deposit = DEPOSITS.load(deps.storage, (proposal_id, depositor.clone()))?;
+    let deposit = DEPOSITS.load(deps.storage, (proposal_id, &depositor))?;
 
     Ok(DepositResponse {
         proposal_id,
@@ -216,8 +216,8 @@ pub fn deposits(
         DepositsQueryOption::FindByProposal { proposal_id, start } => {
             let start = maybe_addr(deps.api, start)?;
             let (min, max) = match order {
-                Order::Ascending => (start.map(Bound::<Addr>::exclusive), None),
-                Order::Descending => (None, start.map(Bound::<Addr>::exclusive)),
+                Order::Ascending => (start.as_ref().map(Bound::exclusive), None),
+                Order::Descending => (None, start.as_ref().map(Bound::exclusive)),
             };
 
             DEPOSITS
@@ -243,12 +243,12 @@ pub fn deposits(
             };
 
             IDX_DEPOSITS_BY_DEPOSITOR
-                .prefix(depositor.clone())
+                .prefix(&depositor)
                 .range(deps.storage, min, max, order)
                 .take(limit)
                 .map(|item| {
                     let (proposal_id, _) = item?;
-                    let deposit = DEPOSITS.load(deps.storage, (proposal_id, depositor.clone()))?;
+                    let deposit = DEPOSITS.load(deps.storage, (proposal_id, &depositor))?;
 
                     Ok(DepositResponse {
                         proposal_id,
@@ -260,13 +260,14 @@ pub fn deposits(
                 .collect()
         }
         DepositsQueryOption::Everything { start } => {
-            let start = start
-                .map(|(id, addr)| -> StdResult<(u64, Addr)> {
-                    let addr = deps.api.addr_validate(&addr)?;
-
-                    Ok((id, addr))
-                })
-                .transpose()?;
+            let addr: Addr;
+            let start = match start {
+                Some((id, addr_str)) => {
+                    addr = deps.api.addr_validate(&addr_str)?;
+                    Some((id, &addr))
+                }
+                None => None,
+            };
             let (min, max) = match order {
                 Order::Ascending => (start.map(Bound::exclusive), None),
                 Order::Descending => (None, start.map(Bound::exclusive)),
