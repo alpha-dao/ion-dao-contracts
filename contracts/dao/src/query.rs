@@ -50,33 +50,21 @@ pub fn token_balances(
     let limit = get_and_check_limit(limit, MAX_LIMIT, DEFAULT_LIMIT)? as usize;
     let order = order.unwrap_or(RangeOrder::Asc).into();
 
-    let balances: StdResult<Vec<_>> = if let Some(start) = start {
-        let (min, max) = match order {
-            Order::Ascending => (Some(Bound::<&str>::exclusive(start.as_str())), None),
-            Order::Descending => (None, Some(Bound::<&str>::exclusive(start.as_str()))),
-        };
-        TREASURY_TOKENS
-            .keys(deps.storage, min, max, order)
-            .take(limit)
-            .map(|k| {
-                let denom = k?;
-                query_balance(&deps.querier, &env.contract.address, &denom)
-            })
-            .collect()
-    } else {
-        TREASURY_TOKENS
-            .keys(deps.storage, None, None, order)
-            .take(limit)
-            .map(|k| {
-                let denom = k?;
-                query_balance(&deps.querier, &env.contract.address, &denom)
-            })
-            .collect()
+    let bound = start.map(|start| Bound::ExclusiveRaw(start.into_bytes()));
+    let (min, max) = match order {
+        Order::Ascending => (bound, None),
+        Order::Descending => (None, bound),
     };
+    let balances = TREASURY_TOKENS
+        .keys(deps.storage, min, max, order)
+        .take(limit)
+        .map(|k| {
+            let denom = k?;
+            query_balance(&deps.querier, &env.contract.address, &denom)
+        })
+        .collect::<StdResult<Vec<_>>>()?;
 
-    Ok(TokenBalancesResponse {
-        balances: balances?,
-    })
+    Ok(TokenBalancesResponse { balances })
 }
 
 pub fn proposal(deps: Deps, env: Env, id: u64) -> StdResult<ProposalResponse<OsmosisMsg>> {
