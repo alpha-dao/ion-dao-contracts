@@ -1,4 +1,5 @@
 use cosmwasm_std::{Addr, StdError};
+use cw_utils::PaymentError;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -6,7 +7,7 @@ pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
     #[error("{0}")]
-    Cw20Error(#[from] cw20_base::ContractError),
+    Payment(#[from] PaymentError),
     #[error("Nothing to claim")]
     NothingToClaim {},
     #[error("Invalid token")]

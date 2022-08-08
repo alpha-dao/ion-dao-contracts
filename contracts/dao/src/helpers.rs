@@ -1,8 +1,4 @@
-use cosmwasm_std::{
-    to_binary, Addr, BlockInfo, CosmosMsg, Decimal, Env, MessageInfo, QuerierWrapper, StdError,
-    StdResult, Uint128, WasmMsg,
-};
-use cw20::Cw20ExecuteMsg;
+use cosmwasm_std::{Addr, BlockInfo, Decimal, QuerierWrapper, StdError, StdResult, Uint128};
 use cw_utils::{Duration, Expiration};
 use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 
@@ -21,29 +17,6 @@ pub fn duration_to_expiry(block: &BlockTime, period: &Duration) -> Expiration {
         Duration::Height(height) => Expiration::AtHeight(block.height + height),
         Duration::Time(time) => Expiration::AtTime(block.time.plus_seconds(*time)),
     }
-}
-
-pub fn get_deposit_message(
-    env: &Env,
-    info: &MessageInfo,
-    amount: &Uint128,
-    gov_token: &Addr,
-) -> StdResult<Vec<CosmosMsg>> {
-    if *amount == Uint128::zero() {
-        return Ok(vec![]);
-    }
-    let transfer_cw20_msg = Cw20ExecuteMsg::TransferFrom {
-        owner: info.sender.clone().into(),
-        recipient: env.contract.address.clone().into(),
-        amount: *amount,
-    };
-    let exec_cw20_transfer = WasmMsg::Execute {
-        contract_addr: gov_token.into(),
-        msg: to_binary(&transfer_cw20_msg)?,
-        funds: vec![],
-    };
-    let cw20_transfer_cosmos_msg: CosmosMsg = exec_cw20_transfer.into();
-    Ok(vec![cw20_transfer_cosmos_msg])
 }
 
 pub fn get_total_staked_supply(deps: Deps) -> StdResult<Uint128> {

@@ -3,7 +3,6 @@ use std::ops::Add;
 use cosmwasm_std::{
     coins, Addr, BankMsg, BlockInfo, Empty, Env, MessageInfo, StdError, StdResult, Storage, Uint128,
 };
-use cw20::Denom;
 use cw3::{Status, Vote};
 use cw_utils::{may_pay, Expiration};
 
@@ -48,7 +47,7 @@ fn create_proposal(
 ) -> StdResult<()> {
     PROPOSALS.save(storage, prop_id, proposal)?;
     IDX_PROPS_BY_STATUS.save(storage, (proposal.status as u8, prop_id), &Empty {})?;
-    IDX_PROPS_BY_PROPOSER.save(storage, (proposer.clone(), prop_id), &Empty {})?;
+    IDX_PROPS_BY_PROPOSER.save(storage, (proposer, prop_id), &Empty {})?;
 
     Ok(())
 }
@@ -61,15 +60,15 @@ fn create_deposit(
 ) -> StdResult<()> {
     // deposit
     let mut deposit = DEPOSITS
-        .may_load(storage, (prop_id, depositor.clone()))?
+        .may_load(storage, (prop_id, depositor))?
         .unwrap_or_default();
     if deposit.amount.is_zero() {
-        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (depositor.clone(), prop_id), &Empty {})?;
+        IDX_DEPOSITS_BY_DEPOSITOR.save(storage, (depositor, prop_id), &Empty {})?;
     }
 
     deposit.amount = deposit.amount.checked_add(*amount)?;
 
-    DEPOSITS.save(storage, (prop_id, depositor.clone()), &deposit)?;
+    DEPOSITS.save(storage, (prop_id, depositor), &deposit)?;
 
     Ok(())
 }
@@ -79,10 +78,10 @@ fn make_deposit_claimable(
     prop_id: u64,
     proposal: &mut Proposal,
 ) -> StdResult<()> {
-    PROPOSALS.update(storage, prop_id, |v| -> StdResult<Proposal> {
-        let mut v = v.unwrap();
-        v.deposit_claimable = true;
-        Ok(v)
+    PROPOSALS.update(storage, prop_id, |prop| -> StdResult<_> {
+        let mut prop = prop.ok_or_else(|| StdError::not_found("proposal"))?;
+        prop.deposit_claimable = true;
+        Ok(prop)
     })?;
     proposal.deposit_claimable = true;
 
@@ -97,13 +96,10 @@ fn update_proposal_status(
 ) -> StdResult<()> {
     let before = proposal.status;
     proposal.status = desired;
-    PROPOSALS.update(storage, prop_id, |prop| {
-        if let Some(mut prop) = prop {
-            prop.status = desired;
-            Ok(prop)
-        } else {
-            Err(StdError::not_found("proposal"))
-        }
+    PROPOSALS.update(storage, prop_id, |prop| -> StdResult<_> {
+        let mut prop = prop.ok_or_else(|| StdError::not_found("proposal"))?;
+        prop.status = desired;
+        Ok(prop)
     })?;
     IDX_PROPS_BY_STATUS.remove(storage, (before as u8, prop_id));
     IDX_PROPS_BY_STATUS.save(storage, (desired as u8, prop_id), &Empty {})?;
@@ -254,13 +250,13 @@ pub fn claim_deposit(
         return Err(ContractError::DepositNotClaimable {});
     }
 
-    let mut deposit = DEPOSITS.load(deps.storage, (prop_id, info.sender.clone()))?;
+    let mut deposit = DEPOSITS.load(deps.storage, (prop_id, &info.sender))?;
     if deposit.claimed {
         return Err(ContractError::DepositAlreadyClaimed {});
     }
     deposit.claimed = true;
 
-    DEPOSITS.save(deps.storage, (prop_id, info.sender.clone()), &deposit)?;
+    DEPOSITS.save(deps.storage, (prop_id, &info.sender), &deposit)?;
 
     let gov_token = GOV_TOKEN.load(deps.storage)?;
 
@@ -304,9 +300,9 @@ pub fn vote(
 
     let ballot = BALLOTS.may_load(deps.storage, (prop_id, &info.sender))?;
     if let Some(ballot) = ballot {
-        prop.votes.revoke(ballot.vote, ballot.weight);
+        prop.votes.revoke(ballot.vote, ballot.weight)?;
     }
-    prop.votes.submit(vote, vote_power);
+    prop.votes.submit(vote, vote_power)?;
 
     BALLOTS.save(
         deps.storage,
@@ -465,8 +461,8 @@ pub fn update_token_list(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    to_add: Vec<Denom>,
-    to_remove: Vec<Denom>,
+    to_add: Vec<String>,
+    to_remove: Vec<String>,
 ) -> Result<Response, ContractError> {
     // Only contract can call this method
     if env.contract.address != info.sender {
@@ -482,26 +478,12 @@ pub fn update_token_list(
         });
     }
 
-    for token in &to_add {
-        match token {
-            Denom::Native(native_denom) => {
-                TREASURY_TOKENS.save(deps.storage, ("native", native_denom.as_str()), &Empty {})?
-            }
-            Denom::Cw20(cw20_addr) => {
-                TREASURY_TOKENS.save(deps.storage, ("cw20", cw20_addr.as_str()), &Empty {})?
-            }
-        }
+    for denom in &to_add {
+        TREASURY_TOKENS.save(deps.storage, denom, &Empty {})?;
     }
 
-    for token in &to_remove {
-        match token {
-            Denom::Native(native_denom) => {
-                TREASURY_TOKENS.remove(deps.storage, ("native", native_denom.as_str()))
-            }
-            Denom::Cw20(cw20_addr) => {
-                TREASURY_TOKENS.remove(deps.storage, ("cw20", cw20_addr.as_str()))
-            }
-        }
+    for denom in &to_remove {
+        TREASURY_TOKENS.remove(deps.storage, denom);
     }
 
     Ok(Response::new().add_attribute("action", "update_cw20_token_list"))
@@ -575,7 +557,7 @@ mod test {
 
         assert!(PROPOSALS.has(&storage, 1));
         assert!(IDX_PROPS_BY_STATUS.has(&storage, (Status::Pending as u8, 1)));
-        assert!(IDX_PROPS_BY_PROPOSER.has(&storage, (proposer.clone(), 1)));
+        assert!(IDX_PROPS_BY_PROPOSER.has(&storage, (&proposer, 1)));
     }
 
     #[test]
@@ -592,23 +574,23 @@ mod test {
         // initial
         super::create_deposit(&mut storage, 1, &depositor, &Uint128::from(10u128)).unwrap();
         assert_eq!(
-            DEPOSITS.load(&storage, (1, depositor.clone())).unwrap(),
+            DEPOSITS.load(&storage, (1, &depositor)).unwrap(),
             Deposit {
                 amount: Uint128::from(10u128),
                 claimed: false
             },
         );
-        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (depositor.clone(), 1)));
+        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (&depositor, 1)));
 
         super::create_deposit(&mut storage, 1, &depositor, &Uint128::from(10u128)).unwrap();
         assert_eq!(
-            DEPOSITS.load(&storage, (1, depositor.clone())).unwrap(),
+            DEPOSITS.load(&storage, (1, &depositor)).unwrap(),
             Deposit {
                 amount: Uint128::from(20u128),
                 claimed: false
             },
         );
-        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (depositor.clone(), 1)));
+        assert!(IDX_DEPOSITS_BY_DEPOSITOR.has(&storage, (&depositor, 1)));
     }
 
     #[test]

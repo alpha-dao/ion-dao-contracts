@@ -1,6 +1,6 @@
-# Stake CW20
+# Stake
 
-This is a basic implementation of a cw20 staking contract. Staked tokens can be unbonded with a configurable unbonding period. Staked balances can be queried at any arbitrary height by external contracts.
+This is a basic implementation of a native token staking contract. Staked tokens can be unbonded with a configurable unbonding period. Staked balances can be queried at any arbitrary height by external contracts.
 
 ## Running this contract
 
@@ -14,9 +14,9 @@ Once you are happy with the content, you can compile it to wasm via:
 
 ```
 RUSTFLAGS='-C link-arg=-s' cargo wasm
-cp ../../target/wasm32-unknown-unknown/release/stake_cw20.wasm .
-ls -l stake_cw20.wasm
-sha256sum stake_cw20.wasm
+cp ../../target/wasm32-unknown-unknown/release/stake.wasm .
+ls -l stake.wasm
+sha256sum stake.wasm
 ```
 
 Or for a production-ready (optimized) build, run a build command in the the repository root: https://github.com/CosmWasm/cw-plus#compiling.

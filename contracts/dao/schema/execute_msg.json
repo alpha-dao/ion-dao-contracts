@@ -169,13 +169,13 @@
             "to_add": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Denom"
+                "type": "string"
               }
             },
             "to_remove": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Denom"
+                "type": "string"
               }
             }
           }
@@ -437,34 +437,6 @@
     "Decimal": {
       "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
       "type": "string"
-    },
-    "Denom": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "native"
-          ],
-          "properties": {
-            "native": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": [
-            "cw20"
-          ],
-          "properties": {
-            "cw20": {
-              "$ref": "#/definitions/Addr"
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "DistributionMsg": {
       "description": "The message types of the distribution module.\n\nSee https://github.com/cosmos/cosmos-sdk/blob/v0.42.4/proto/cosmos/distribution/v1beta1/tx.proto",
