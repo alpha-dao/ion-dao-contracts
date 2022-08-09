@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdError};
+use cosmwasm_std::{Addr, OverflowError, StdError};
 use cw_utils::PaymentError;
 use thiserror::Error;
 
@@ -6,6 +6,8 @@ use thiserror::Error;
 pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
+    #[error("{0}")]
+    Overflow(#[from] OverflowError),
     #[error("{0}")]
     Payment(#[from] PaymentError),
     #[error("Nothing to claim")]
@@ -18,4 +20,6 @@ pub enum ContractError {
     TooManyClaims {},
     #[error("No admin configured")]
     NoAdminConfigured {},
+    #[error("Request size ({size}) is above limit of ({max})")]
+    OversizedRequest { size: u64, max: u64 },
 }

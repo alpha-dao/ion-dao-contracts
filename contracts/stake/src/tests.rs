@@ -10,9 +10,8 @@ use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 use osmo_bindings_test::OsmosisApp;
 
 use crate::msg::{
-    ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, QueryMsg,
-    StakedBalanceAtHeightResponse, StakedValueResponse, TotalStakedAtHeightResponse,
-    TotalValueResponse,
+    ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, QueryMsg, StakedValueResponse,
+    TotalPowerAtHeightResponse, TotalValueResponse, VotingPowerAtHeightResponse,
 };
 use crate::state::MAX_CLAIMS;
 use crate::ContractError;
@@ -162,11 +161,11 @@ impl Stake {
         app: &OsmosisApp,
         address: impl Into<String>,
         height: Option<u64>,
-    ) -> StakedBalanceAtHeightResponse {
+    ) -> VotingPowerAtHeightResponse {
         app.wrap()
             .query_wasm_smart(
                 &self.address,
-                &QueryMsg::StakedBalanceAtHeight {
+                &QueryMsg::VotingPowerAtHeight {
                     address: address.into(),
                     height,
                 },
@@ -178,9 +177,9 @@ impl Stake {
         &self,
         app: &OsmosisApp,
         height: Option<u64>,
-    ) -> TotalStakedAtHeightResponse {
+    ) -> TotalPowerAtHeightResponse {
         app.wrap()
-            .query_wasm_smart(&self.address, &QueryMsg::TotalStakedAtHeight { height })
+            .query_wasm_smart(&self.address, &QueryMsg::TotalPowerAtHeight { height })
             .unwrap()
     }
 
@@ -296,11 +295,11 @@ fn test_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(50u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(50u128)
     );
     assert_eq!(
@@ -338,11 +337,11 @@ fn test_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(20u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(70u128)
     );
     assert_eq!(get_balance(&app, ADDR2), Uint128::zero());
@@ -363,11 +362,11 @@ fn test_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(10u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(60u128)
     );
     assert_eq!(get_balance(&app, ADDR2), Uint128::from(10u128));
@@ -375,7 +374,7 @@ fn test_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(50u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(30u128));
@@ -447,11 +446,11 @@ fn test_unstaking_with_claims() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(50u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(50u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(50u128));
@@ -466,11 +465,11 @@ fn test_unstaking_with_claims() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(40u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(40u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(50u128));
@@ -491,11 +490,11 @@ fn test_unstaking_with_claims() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(40u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(40u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(60u128));
@@ -518,11 +517,11 @@ fn test_unstaking_with_claims() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(30u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(30u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(60u128));
@@ -533,11 +532,11 @@ fn test_unstaking_with_claims() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(30u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(30u128)
     );
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(70u128));
@@ -573,13 +572,13 @@ fn multiple_address_staking() {
         assert_eq!(
             staking
                 .query_staked_balance_at_height(&app, *addr, None)
-                .balance,
+                .power,
             amount1
         );
         assert_eq!(get_balance(&app, *addr), Uint128::zero())
     }
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         amount1.checked_mul(Uint128::new(4)).unwrap()
     );
 }
@@ -602,11 +601,11 @@ fn test_auto_compounding_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1.to_string(), None)
-            .balance,
+            .power,
         Uint128::from(100u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(100u128),
     );
     assert_eq!(
@@ -626,11 +625,11 @@ fn test_auto_compounding_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1.to_string(), None)
-            .balance,
+            .power,
         Uint128::from(100u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(100u128)
     );
     assert_eq!(
@@ -664,11 +663,11 @@ fn test_auto_compounding_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(50u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(150u128)
     );
     assert_eq!(
@@ -695,17 +694,17 @@ fn test_auto_compounding_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(100u128)
     );
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(50u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(150u128)
     );
     assert_eq!(
@@ -732,11 +731,11 @@ fn test_auto_compounding_staking() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(25u128)
     );
     assert_eq!(
-        staking.query_total_staked_at_height(&app, None).total,
+        staking.query_total_staked_at_height(&app, None).power,
         Uint128::from(125u128)
     );
     assert_eq!(get_balance(&app, ADDR2), Uint128::from(65u128));
@@ -766,13 +765,13 @@ fn test_simple_unstaking_with_duration() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(100u128)
     );
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(100u128)
     );
 
@@ -791,13 +790,13 @@ fn test_simple_unstaking_with_duration() {
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR1, None)
-            .balance,
+            .power,
         Uint128::from(0u128)
     );
     assert_eq!(
         staking
             .query_staked_balance_at_height(&app, ADDR2, None)
-            .balance,
+            .power,
         Uint128::from(0u128)
     );
 

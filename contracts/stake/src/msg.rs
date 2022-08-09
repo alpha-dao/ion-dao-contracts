@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Order, Uint128};
 pub use cw_controllers::ClaimsResponse;
 pub use cw_utils::Duration;
 use schemars::JsonSchema;
@@ -26,37 +26,63 @@ pub enum ExecuteMsg {
     },
 }
 
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum RangeOrder {
+    Asc,
+    Desc,
+}
+
+impl From<RangeOrder> for Order {
+    fn from(order: RangeOrder) -> Self {
+        match order {
+            RangeOrder::Asc => Order::Ascending,
+            RangeOrder::Desc => Order::Descending,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    StakedBalanceAtHeight {
+    // DAO DAO compatability
+    VotingPowerAtHeight {
         address: String,
         height: Option<u64>,
     },
-    TotalStakedAtHeight {
+    TotalPowerAtHeight {
         height: Option<u64>,
     },
     StakedValue {
         address: String,
     },
     TotalValue {},
-    GetConfig {},
     Claims {
         address: String,
     },
+
+    RangeStakers {
+        start_at: Option<String>,
+        limit: Option<u32>,
+        order: Option<RangeOrder>,
+    },
+
+    GetConfig {},
+    Info {},
+    Dao {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct StakedBalanceAtHeightResponse {
-    pub balance: Uint128,
+pub struct VotingPowerAtHeightResponse {
+    pub power: Uint128,
     pub height: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct TotalStakedAtHeightResponse {
-    pub total: Uint128,
+pub struct TotalPowerAtHeightResponse {
+    pub power: Uint128,
     pub height: u64,
 }
 

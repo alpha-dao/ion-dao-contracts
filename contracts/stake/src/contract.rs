@@ -1,18 +1,23 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    coins, to_binary, Addr, BankMsg, Binary, Env, MessageInfo, StdError, StdResult, Uint128,
+    coins, to_binary, Addr, BankMsg, Binary, Env, MessageInfo, Order, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
+use cw_storage_plus::Bound;
+use cw_utils::maybe_addr;
 use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 
+use crate::helpers::get_and_check_limit;
 use crate::msg::{
-    ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg,
-    StakedBalanceAtHeightResponse, StakedValueResponse, TotalStakedAtHeightResponse,
-    TotalValueResponse,
+    ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg, RangeOrder,
+    StakedValueResponse, TotalPowerAtHeightResponse, TotalValueResponse,
+    VotingPowerAtHeightResponse,
 };
-use crate::state::{Config, BALANCE, CLAIMS, CONFIG, MAX_CLAIMS, STAKED_BALANCES, STAKED_TOTAL};
-use crate::ContractError;
+use crate::state::{
+    Config, BALANCE, CLAIMS, CONFIG, DAO, MAX_CLAIMS, STAKED_BALANCES, STAKED_TOTAL,
+};
+use crate::{ContractError, DEFAULT_LIMIT, MAX_LIMIT};
 
 /// type aliases
 pub type Response = cosmwasm_std::Response<OsmosisMsg>;
@@ -29,7 +34,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let admin = match msg.admin {
@@ -43,6 +48,7 @@ pub fn instantiate(
         unstaking_duration: msg.unstaking_duration,
     };
     CONFIG.save(deps.storage, &config)?;
+    DAO.save(deps.storage, &info.sender)?;
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     Ok(Response::new())
@@ -140,6 +146,7 @@ pub fn execute_stake(
         deps.storage,
         &balance.checked_add(amount).map_err(StdError::overflow)?,
     )?;
+
     Ok(Response::new()
         .add_attribute("action", "stake")
         .add_attribute("from", sender)
@@ -249,43 +256,55 @@ pub fn execute_fund(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetConfig {} => to_binary(&query_config(deps)?),
-        QueryMsg::StakedBalanceAtHeight { address, height } => {
-            to_binary(&query_staked_balance_at_height(deps, env, address, height)?)
+        // DAO DAO compatability
+        QueryMsg::VotingPowerAtHeight { address, height } => {
+            to_binary(&query_voting_power_at_height(deps, env, address, height)?)
         }
-        QueryMsg::TotalStakedAtHeight { height } => {
-            to_binary(&query_total_staked_at_height(deps, env, height)?)
+        QueryMsg::TotalPowerAtHeight { height } => {
+            to_binary(&query_total_power_at_height(deps, env, height)?)
         }
         QueryMsg::StakedValue { address } => to_binary(&query_staked_value(deps, env, address)?),
         QueryMsg::TotalValue {} => to_binary(&query_total_value(deps, env)?),
         QueryMsg::Claims { address } => to_binary(&query_claims(deps, address)?),
+
+        // iterators
+        QueryMsg::RangeStakers {
+            start_at,
+            limit,
+            order,
+        } => to_binary(&query_range_stakers(deps, start_at, limit, order)?),
+
+        // static
+        QueryMsg::GetConfig {} => to_binary(&query_config(deps)?),
+        QueryMsg::Info {} => to_binary(&query_info(deps)?),
+        QueryMsg::Dao {} => to_binary(&query_dao(deps)?),
     }
 }
 
-pub fn query_staked_balance_at_height(
+pub fn query_voting_power_at_height(
     deps: Deps,
     _env: Env,
     address: String,
     height: Option<u64>,
-) -> StdResult<StakedBalanceAtHeightResponse> {
+) -> StdResult<VotingPowerAtHeightResponse> {
     let address = deps.api.addr_validate(&address)?;
     let height = height.unwrap_or(_env.block.height);
-    let balance = STAKED_BALANCES
+    let power = STAKED_BALANCES
         .may_load_at_height(deps.storage, &address, height)?
         .unwrap_or_default();
-    Ok(StakedBalanceAtHeightResponse { balance, height })
+    Ok(VotingPowerAtHeightResponse { power, height })
 }
 
-pub fn query_total_staked_at_height(
+pub fn query_total_power_at_height(
     deps: Deps,
     _env: Env,
     height: Option<u64>,
-) -> StdResult<TotalStakedAtHeightResponse> {
+) -> StdResult<TotalPowerAtHeightResponse> {
     let height = height.unwrap_or(_env.block.height);
-    let total = STAKED_TOTAL
+    let power = STAKED_TOTAL
         .may_load_at_height(deps.storage, height)?
         .unwrap_or_default();
-    Ok(TotalStakedAtHeightResponse { total, height })
+    Ok(TotalPowerAtHeightResponse { power, height })
 }
 
 pub fn query_staked_value(
@@ -318,6 +337,56 @@ pub fn query_total_value(deps: Deps, _env: Env) -> StdResult<TotalValueResponse>
     Ok(TotalValueResponse { total: balance })
 }
 
+pub fn query_range_stakers(
+    deps: Deps,
+    start: Option<String>,
+    limit: Option<u32>,
+    order: Option<RangeOrder>,
+) -> StdResult<Vec<(Addr, StakedValueResponse)>> {
+    let limit = get_and_check_limit(limit, MAX_LIMIT, DEFAULT_LIMIT)? as usize;
+    let order = order.unwrap_or(RangeOrder::Asc).into();
+    let start = maybe_addr(deps.api, start)?;
+    let (min, max) = match order {
+        Order::Ascending => (start.as_ref().map(Bound::exclusive), None),
+        Order::Descending => (None, start.as_ref().map(Bound::exclusive)),
+    };
+
+    let balance = BALANCE.load(deps.storage).unwrap_or_default();
+    let total = STAKED_TOTAL.load(deps.storage).unwrap_or_default();
+
+    let resp: StdResult<Vec<(Addr, StakedValueResponse)>> = STAKED_BALANCES
+        .range(deps.storage, min, max, order)
+        .take(limit)
+        .map(|item| -> StdResult<(Addr, StakedValueResponse)> {
+            let (staker, staked) = item?;
+
+            match balance == Uint128::zero()
+                || staked == Uint128::zero()
+                || total == Uint128::zero()
+            {
+                true => Ok((
+                    staker,
+                    StakedValueResponse {
+                        value: Uint128::zero(),
+                    },
+                )),
+                false => Ok((
+                    staker,
+                    StakedValueResponse {
+                        value: staked
+                            .checked_mul(balance)
+                            .map_err(StdError::overflow)?
+                            .checked_div(total)
+                            .map_err(StdError::divide_by_zero)?,
+                    },
+                )),
+            }
+        })
+        .collect();
+
+    resp
+}
+
 pub fn query_config(deps: Deps) -> StdResult<GetConfigResponse> {
     let config = CONFIG.load(deps.storage)?;
     Ok(GetConfigResponse {
@@ -325,6 +394,14 @@ pub fn query_config(deps: Deps) -> StdResult<GetConfigResponse> {
         denom: config.denom,
         unstaking_duration: config.unstaking_duration,
     })
+}
+
+pub fn query_info(deps: Deps) -> StdResult<cw2::ContractVersion> {
+    cw2::get_contract_version(deps.storage)
+}
+
+pub fn query_dao(deps: Deps) -> StdResult<Addr> {
+    DAO.load(deps.storage)
 }
 
 pub fn query_claims(deps: Deps, address: String) -> StdResult<ClaimsResponse> {
