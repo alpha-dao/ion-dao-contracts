@@ -23,25 +23,25 @@ pub fn get_total_staked_supply(deps: Deps) -> StdResult<Uint128> {
     let staking_contract = STAKING_CONTRACT.load(deps.storage)?;
 
     // Get total supply
-    let total: ion_stake::msg::TotalStakedAtHeightResponse = deps.querier.query_wasm_smart(
+    let total: ion_stake::msg::TotalPowerAtHeightResponse = deps.querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::TotalStakedAtHeight { height: None },
+        &ion_stake::msg::QueryMsg::TotalPowerAtHeight { height: None },
     )?;
-    Ok(total.total)
+    Ok(total.power)
 }
 
 pub fn get_staked_balance(deps: Deps, address: Addr) -> StdResult<Uint128> {
     let staking_contract = STAKING_CONTRACT.load(deps.storage)?;
 
     // Get current staked balance
-    let res: ion_stake::msg::StakedBalanceAtHeightResponse = deps.querier.query_wasm_smart(
+    let res: ion_stake::msg::VotingPowerAtHeightResponse = deps.querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::StakedBalanceAtHeight {
+        &ion_stake::msg::QueryMsg::VotingPowerAtHeight {
             address: address.to_string(),
             height: None,
         },
     )?;
-    Ok(res.balance)
+    Ok(res.power)
 }
 
 pub fn get_config(deps: Deps) -> StdResult<ion_stake::msg::GetConfigResponse> {
@@ -61,14 +61,14 @@ pub fn get_voting_power_at_height(
     height: u64,
 ) -> StdResult<Uint128> {
     // Get voting power at height
-    let balance: ion_stake::msg::StakedBalanceAtHeightResponse = querier.query_wasm_smart(
+    let balance: ion_stake::msg::VotingPowerAtHeightResponse = querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::StakedBalanceAtHeight {
+        &ion_stake::msg::QueryMsg::VotingPowerAtHeight {
             address: address.to_string(),
             height: Some(height),
         },
     )?;
-    Ok(balance.balance)
+    Ok(balance.power)
 }
 
 pub fn proposal_to_response(
