@@ -5,10 +5,10 @@
     {
       "type": "object",
       "required": [
-        "staked_balance_at_height"
+        "voting_power_at_height"
       ],
       "properties": {
-        "staked_balance_at_height": {
+        "voting_power_at_height": {
           "type": "object",
           "required": [
             "address"
@@ -33,10 +33,10 @@
     {
       "type": "object",
       "required": [
-        "total_staked_at_height"
+        "total_power_at_height"
       ],
       "properties": {
-        "total_staked_at_height": {
+        "total_power_at_height": {
           "type": "object",
           "properties": {
             "height": {
@@ -87,18 +87,6 @@
     {
       "type": "object",
       "required": [
-        "get_config"
-      ],
-      "properties": {
-        "get_config": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "claims"
       ],
       "properties": {
@@ -115,6 +103,89 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "range_stakers"
+      ],
+      "properties": {
+        "range_stakers": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "order": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/RangeOrder"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "start_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_config"
+      ],
+      "properties": {
+        "get_config": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "info"
+      ],
+      "properties": {
+        "info": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "dao"
+      ],
+      "properties": {
+        "dao": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "RangeOrder": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
 }

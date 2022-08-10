@@ -13,6 +13,7 @@ pub struct Config {
 }
 
 pub const CONFIG: Item<Config> = Item::new("config");
+pub const DAO: Item<Addr> = Item::new("dao");
 
 pub const STAKED_BALANCES: SnapshotMap<&Addr, Uint128> = SnapshotMap::new(
     "staked_balances",

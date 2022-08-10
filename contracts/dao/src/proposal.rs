@@ -14,7 +14,7 @@ use crate::ContractError;
 const PRECISION_FACTOR: u128 = 1_000_000_000;
 
 // weight of votes for each option
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug, Default)]
 pub struct Votes {
     pub yes: Uint128,
     pub no: Uint128,
@@ -59,7 +59,7 @@ impl Votes {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug, Default)]
 pub struct BlockTime {
     pub height: u64,
     pub time: Timestamp,

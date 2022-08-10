@@ -101,9 +101,7 @@ pub fn execute(
     match msg {
         Propose(propose_msg) => execute::propose(deps, env, info, propose_msg),
         Deposit { proposal_id } => execute::deposit(deps, env, info, proposal_id),
-        ExecuteMsg::ClaimDeposit { proposal_id } => {
-            execute::claim_deposit(deps, env, info, proposal_id)
-        }
+        ClaimDeposit { proposal_id } => execute::claim_deposit(deps, env, info, proposal_id),
         Vote(VoteMsg { proposal_id, vote }) => execute::vote(deps, env, info, proposal_id, vote),
         Execute { proposal_id } => execute::execute(deps, env, info, proposal_id),
         Close { proposal_id } => execute::close(deps, env, info, proposal_id),
