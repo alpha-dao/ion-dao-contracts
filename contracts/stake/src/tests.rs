@@ -303,7 +303,7 @@ fn test_staking() {
         Uint128::from(50u128)
     );
     assert_eq!(
-        (&app).wrap().query_balance(ADDR1, DENOM).unwrap().amount,
+        app.wrap().query_balance(ADDR1, DENOM).unwrap().amount,
         Uint128::from(50u128)
     );
 
@@ -312,16 +312,14 @@ fn test_staking() {
         to_address: ADDR2.to_string(),
         amount: coins(51, DENOM),
     };
-    let _err = (&mut app)
-        .execute(info.sender.clone(), msg.into())
-        .unwrap_err();
+    let _err = app.execute(info.sender.clone(), msg.into()).unwrap_err();
 
     // Sucessful transfer of unbonded amount
     let msg = BankMsg::Send {
         to_address: ADDR2.to_string(),
         amount: coins(20, DENOM),
     };
-    let _res = (&mut app).execute(info.sender.clone(), msg.into()).unwrap();
+    let _res = app.execute(info.sender.clone(), msg.into()).unwrap();
 
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(30u128));
     assert_eq!(get_balance(&app, ADDR2), Uint128::from(20u128));
@@ -562,7 +560,7 @@ fn multiple_address_staking() {
     );
 
     for addr in &[ADDR1, ADDR2, ADDR3, ADDR4] {
-        let info = mock_info(*addr, &[]);
+        let info = mock_info(addr, &[]);
         // Successful bond
         let _res = staking
             .stake(&mut app, &info.sender, coin(amount1.u128(), DENOM))
@@ -575,7 +573,7 @@ fn multiple_address_staking() {
                 .power,
             amount1
         );
-        assert_eq!(get_balance(&app, *addr), Uint128::zero())
+        assert_eq!(get_balance(&app, addr), Uint128::zero())
     }
     assert_eq!(
         staking.query_total_staked_at_height(&app, None).power,
@@ -647,7 +645,7 @@ fn test_auto_compounding_staking() {
         to_address: ADDR2.to_string(),
         amount: coins(100, DENOM),
     };
-    let _res = (&mut app).execute(info.sender, msg.into()).unwrap();
+    let _res = app.execute(info.sender, msg.into()).unwrap();
 
     assert_eq!(get_balance(&app, ADDR1), Uint128::from(700u128));
     assert_eq!(get_balance(&app, ADDR2), Uint128::from(100u128));

@@ -98,7 +98,7 @@ pub enum ExecuteMsg {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum RangeOrder {
     Asc,
@@ -122,7 +122,7 @@ pub enum ProposalsQueryOption {
     Everything {},
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum DepositsQueryOption {
     FindByProposal {
@@ -345,7 +345,7 @@ pub struct ConfigResponse {
     pub staking_contract: Addr,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 pub struct TokenListResponse {
     pub token_list: Vec<String>,
 }
@@ -417,7 +417,7 @@ pub struct VotesResponse {
     pub votes: Vec<VoteInfo>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 pub struct DepositResponse {
     pub proposal_id: u64,
     pub depositor: String,
@@ -425,12 +425,12 @@ pub struct DepositResponse {
     pub claimed: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 pub struct DepositsResponse {
     pub deposits: Vec<DepositResponse>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 pub struct MigrateMsg {}
 
 #[cfg(test)]

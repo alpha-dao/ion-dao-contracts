@@ -44,7 +44,7 @@ impl Config {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug, Default)]
 pub struct Deposit {
     pub amount: Uint128,
     pub claimed: bool,
