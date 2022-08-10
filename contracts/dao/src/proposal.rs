@@ -7,13 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::helpers::duration_to_expiry;
 use crate::threshold::Threshold;
+use crate::ContractError;
 
 // we multiply by this when calculating needed_votes in order to round up properly
 // Note: `10u128.pow(9)` fails as "u128::pow` is not yet stable as a const fn"
 const PRECISION_FACTOR: u128 = 1_000_000_000;
 
 // weight of votes for each option
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug, Default)]
 pub struct Votes {
     pub yes: Uint128,
     pub no: Uint128,
@@ -37,26 +38,28 @@ impl Votes {
         }
     }
 
-    pub fn submit(&mut self, vote: Vote, weight: Uint128) {
+    pub fn submit(&mut self, vote: Vote, weight: Uint128) -> Result<(), ContractError> {
         match vote {
-            Vote::Yes => self.yes = self.yes.checked_add(weight).unwrap(),
-            Vote::Abstain => self.abstain = self.abstain.checked_add(weight).unwrap(),
-            Vote::No => self.no = self.no.checked_add(weight).unwrap(),
-            Vote::Veto => self.veto = self.veto.checked_add(weight).unwrap(),
+            Vote::Yes => self.yes = self.yes.checked_add(weight)?,
+            Vote::Abstain => self.abstain = self.abstain.checked_add(weight)?,
+            Vote::No => self.no = self.no.checked_add(weight)?,
+            Vote::Veto => self.veto = self.veto.checked_add(weight)?,
         }
+        Ok(())
     }
 
-    pub fn revoke(&mut self, vote: Vote, weight: Uint128) {
+    pub fn revoke(&mut self, vote: Vote, weight: Uint128) -> Result<(), ContractError> {
         match vote {
-            Vote::Yes => self.yes = self.yes.checked_sub(weight).unwrap(),
-            Vote::No => self.no = self.no.checked_sub(weight).unwrap(),
-            Vote::Abstain => self.abstain = self.abstain.checked_sub(weight).unwrap(),
-            Vote::Veto => self.veto = self.veto.checked_sub(weight).unwrap(),
+            Vote::Yes => self.yes = self.yes.checked_sub(weight)?,
+            Vote::No => self.no = self.no.checked_sub(weight)?,
+            Vote::Abstain => self.abstain = self.abstain.checked_sub(weight)?,
+            Vote::Veto => self.veto = self.veto.checked_sub(weight)?,
         }
+        Ok(())
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug, Default)]
 pub struct BlockTime {
     pub height: u64,
     pub time: Timestamp,
@@ -215,10 +218,10 @@ mod test {
     #[test]
     fn count_votes() {
         let mut votes = Votes::new(Uint128::new(5));
-        votes.submit(Vote::No, Uint128::new(10));
-        votes.submit(Vote::Veto, Uint128::new(20));
-        votes.submit(Vote::Yes, Uint128::new(30));
-        votes.submit(Vote::Abstain, Uint128::new(40));
+        votes.submit(Vote::No, Uint128::new(10)).unwrap();
+        votes.submit(Vote::Veto, Uint128::new(20)).unwrap();
+        votes.submit(Vote::Yes, Uint128::new(30)).unwrap();
+        votes.submit(Vote::Abstain, Uint128::new(40)).unwrap();
 
         assert_eq!(votes.total(), Uint128::new(105));
         assert_eq!(votes.yes, Uint128::new(35));

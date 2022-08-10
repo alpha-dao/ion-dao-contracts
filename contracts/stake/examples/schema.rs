@@ -4,9 +4,8 @@ use std::fs::create_dir_all;
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
 use ion_stake::msg::{
-    ClaimsResponse, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg,
-    StakedBalanceAtHeightResponse, StakedValueResponse, TotalStakedAtHeightResponse,
-    TotalValueResponse,
+    ClaimsResponse, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg, StakedValueResponse,
+    TotalPowerAtHeightResponse, TotalValueResponse, VotingPowerAtHeightResponse,
 };
 
 fn main() {
@@ -18,8 +17,8 @@ fn main() {
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(ExecuteMsg), &out_dir);
     export_schema(&schema_for!(QueryMsg), &out_dir);
-    export_schema(&schema_for!(StakedBalanceAtHeightResponse), &out_dir);
-    export_schema(&schema_for!(TotalStakedAtHeightResponse), &out_dir);
+    export_schema(&schema_for!(VotingPowerAtHeightResponse), &out_dir);
+    export_schema(&schema_for!(TotalPowerAtHeightResponse), &out_dir);
     export_schema(&schema_for!(StakedValueResponse), &out_dir);
     export_schema(&schema_for!(TotalValueResponse), &out_dir);
     export_schema(&schema_for!(GetConfigResponse), &out_dir);

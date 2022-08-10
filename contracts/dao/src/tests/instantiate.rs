@@ -1,6 +1,5 @@
 use cosmwasm_std::{Addr, Decimal, Uint128};
 use cw2::query_contract_info;
-use cw20::Denom;
 use cw_multi_test::Executor;
 use cw_utils::Duration;
 use osmo_bindings_test::OsmosisApp;
@@ -85,10 +84,7 @@ fn should_work_with_new_stake_contract() {
         .query_wasm_smart(&dao_addr, &QueryMsg::TokenList {})
         .unwrap();
 
-    assert_eq!(
-        token_list_resp.token_list,
-        vec![Denom::Native("utnt".to_string())]
-    );
+    assert_eq!(token_list_resp.token_list, vec!["utnt".to_string()]);
 }
 
 #[test]
@@ -131,10 +127,7 @@ fn should_work_with_existing_stake_contract() {
         .query_wasm_smart(&dao_addr, &QueryMsg::TokenList {})
         .unwrap();
 
-    assert_eq!(
-        token_list_resp.token_list,
-        vec![Denom::Native("utnt".to_string())]
-    );
+    assert_eq!(token_list_resp.token_list, vec!["utnt".to_string()]);
 }
 
 #[test]

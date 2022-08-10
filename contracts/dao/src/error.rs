@@ -1,4 +1,4 @@
-use cosmwasm_std::StdError;
+use cosmwasm_std::{OverflowError, StdError};
 use cw_utils::PaymentError;
 use thiserror::Error;
 
@@ -6,6 +6,9 @@ use thiserror::Error;
 pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
+
+    #[error("{0}")]
+    Overflow(#[from] OverflowError),
 
     #[error("Failed to instantiate governance token")]
     InstantiateGovTokenError {},
@@ -21,9 +24,6 @@ pub enum ContractError {
 
     #[error("Invalid voting / deposit period")]
     InvalidPeriod {},
-
-    #[error("Cw20 contract invalid address '{addr}'")]
-    InvalidCw20 { addr: String },
 
     #[error("Unauthorized")]
     Unauthorized {},

@@ -6,5 +6,7 @@ export * from "./query_msg";
 export * from "./shared-types";
 export * from "./staked_balance_at_height_response";
 export * from "./staked_value_response";
+export * from "./total_power_at_height_response";
 export * from "./total_staked_at_height_response";
 export * from "./total_value_response";
+export * from "./voting_power_at_height_response";

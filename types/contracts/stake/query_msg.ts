@@ -1,13 +1,13 @@
 export type QueryMsg =
   | {
-      staked_balance_at_height: {
+      voting_power_at_height: {
         address: string;
         height?: number | null;
         [k: string]: unknown;
       };
     }
   | {
-      total_staked_at_height: {
+      total_power_at_height: {
         height?: number | null;
         [k: string]: unknown;
       };
@@ -24,13 +24,32 @@ export type QueryMsg =
       };
     }
   | {
+      claims: {
+        address: string;
+        [k: string]: unknown;
+      };
+    }
+  | {
+      range_stakers: {
+        limit?: number | null;
+        order?: RangeOrder | null;
+        start_at?: string | null;
+        [k: string]: unknown;
+      };
+    }
+  | {
       get_config: {
         [k: string]: unknown;
       };
     }
   | {
-      claims: {
-        address: string;
+      info: {
+        [k: string]: unknown;
+      };
+    }
+  | {
+      dao: {
         [k: string]: unknown;
       };
     };
+export type RangeOrder = "asc" | "desc";

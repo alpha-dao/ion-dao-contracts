@@ -1,8 +1,4 @@
-use cosmwasm_std::{
-    to_binary, Addr, BlockInfo, CosmosMsg, Decimal, Env, MessageInfo, QuerierWrapper, StdError,
-    StdResult, Uint128, WasmMsg,
-};
-use cw20::Cw20ExecuteMsg;
+use cosmwasm_std::{Addr, BlockInfo, Decimal, QuerierWrapper, StdError, StdResult, Uint128};
 use cw_utils::{Duration, Expiration};
 use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 
@@ -23,52 +19,29 @@ pub fn duration_to_expiry(block: &BlockTime, period: &Duration) -> Expiration {
     }
 }
 
-pub fn get_deposit_message(
-    env: &Env,
-    info: &MessageInfo,
-    amount: &Uint128,
-    gov_token: &Addr,
-) -> StdResult<Vec<CosmosMsg>> {
-    if *amount == Uint128::zero() {
-        return Ok(vec![]);
-    }
-    let transfer_cw20_msg = Cw20ExecuteMsg::TransferFrom {
-        owner: info.sender.clone().into(),
-        recipient: env.contract.address.clone().into(),
-        amount: *amount,
-    };
-    let exec_cw20_transfer = WasmMsg::Execute {
-        contract_addr: gov_token.into(),
-        msg: to_binary(&transfer_cw20_msg)?,
-        funds: vec![],
-    };
-    let cw20_transfer_cosmos_msg: CosmosMsg = exec_cw20_transfer.into();
-    Ok(vec![cw20_transfer_cosmos_msg])
-}
-
 pub fn get_total_staked_supply(deps: Deps) -> StdResult<Uint128> {
     let staking_contract = STAKING_CONTRACT.load(deps.storage)?;
 
     // Get total supply
-    let total: ion_stake::msg::TotalStakedAtHeightResponse = deps.querier.query_wasm_smart(
+    let total: ion_stake::msg::TotalPowerAtHeightResponse = deps.querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::TotalStakedAtHeight { height: None },
+        &ion_stake::msg::QueryMsg::TotalPowerAtHeight { height: None },
     )?;
-    Ok(total.total)
+    Ok(total.power)
 }
 
 pub fn get_staked_balance(deps: Deps, address: Addr) -> StdResult<Uint128> {
     let staking_contract = STAKING_CONTRACT.load(deps.storage)?;
 
     // Get current staked balance
-    let res: ion_stake::msg::StakedBalanceAtHeightResponse = deps.querier.query_wasm_smart(
+    let res: ion_stake::msg::VotingPowerAtHeightResponse = deps.querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::StakedBalanceAtHeight {
+        &ion_stake::msg::QueryMsg::VotingPowerAtHeight {
             address: address.to_string(),
             height: None,
         },
     )?;
-    Ok(res.balance)
+    Ok(res.power)
 }
 
 pub fn get_config(deps: Deps) -> StdResult<ion_stake::msg::GetConfigResponse> {
@@ -88,14 +61,14 @@ pub fn get_voting_power_at_height(
     height: u64,
 ) -> StdResult<Uint128> {
     // Get voting power at height
-    let balance: ion_stake::msg::StakedBalanceAtHeightResponse = querier.query_wasm_smart(
+    let balance: ion_stake::msg::VotingPowerAtHeightResponse = querier.query_wasm_smart(
         staking_contract,
-        &ion_stake::msg::QueryMsg::StakedBalanceAtHeight {
-            address: address.to_string(),
+        &ion_stake::msg::QueryMsg::VotingPowerAtHeight {
+            address: address.into_string(),
             height: Some(height),
         },
     )?;
-    Ok(balance.balance)
+    Ok(balance.power)
 }
 
 pub fn proposal_to_response(

@@ -50,7 +50,7 @@ pub fn instantiate(
             unstaking_duration,
         } => {
             // Add native token to map of TREASURY TOKENS
-            TREASURY_TOKENS.save(deps.storage, ("native", denom.as_str()), &Empty {})?;
+            TREASURY_TOKENS.save(deps.storage, &denom, &Empty {})?;
 
             // Save gov token
             GOV_TOKEN.save(deps.storage, &denom)?;
@@ -78,11 +78,7 @@ pub fn instantiate(
 
             let staking_config = get_config(deps.as_ref())?;
             // Add native token to map of TREASURY TOKENS
-            TREASURY_TOKENS.save(
-                deps.storage,
-                ("native", staking_config.denom.as_str()),
-                &Empty {},
-            )?;
+            TREASURY_TOKENS.save(deps.storage, &staking_config.denom, &Empty {})?;
 
             // Save gov token
             GOV_TOKEN.save(deps.storage, &staking_config.denom)?;
@@ -105,9 +101,7 @@ pub fn execute(
     match msg {
         Propose(propose_msg) => execute::propose(deps, env, info, propose_msg),
         Deposit { proposal_id } => execute::deposit(deps, env, info, proposal_id),
-        ExecuteMsg::ClaimDeposit { proposal_id } => {
-            execute::claim_deposit(deps, env, info, proposal_id)
-        }
+        ClaimDeposit { proposal_id } => execute::claim_deposit(deps, env, info, proposal_id),
         Vote(VoteMsg { proposal_id, vote }) => execute::vote(deps, env, info, proposal_id, vote),
         Execute { proposal_id } => execute::execute(deps, env, info, proposal_id),
         Close { proposal_id } => execute::close(deps, env, info, proposal_id),
@@ -129,7 +123,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
     match msg {
         GetConfig {} => to_binary(&query::config(deps)?),
-        TokenList {} => to_binary(&query::token_list(deps)),
+        TokenList {} => to_binary(&query::token_list(deps)?),
         TokenBalances {
             start,
             limit,

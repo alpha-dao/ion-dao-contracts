@@ -2,7 +2,6 @@ import {
   Addr,
   Config,
   CosmosMsgFor_OsmosisMsg,
-  Denom,
   Expiration,
   Vote,
 } from "./shared-types";
@@ -49,8 +48,8 @@ export type ExecuteMsg =
     }
   | {
       update_token_list: {
-        to_add: Denom[];
-        to_remove: Denom[];
+        to_add: string[];
+        to_remove: string[];
         [k: string]: unknown;
       };
     }

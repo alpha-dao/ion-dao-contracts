@@ -365,13 +365,6 @@ export type Expiration =
         [k: string]: unknown;
       };
     };
-export type Denom =
-  | {
-      native: string;
-    }
-  | {
-      cw20: Addr;
-    };
 export interface Coin {
   [k: string]: unknown;
   amount: Uint128;

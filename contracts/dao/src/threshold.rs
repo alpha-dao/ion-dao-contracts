@@ -7,7 +7,7 @@ use crate::ContractError;
 /// Declares a `quorum` of the total votes that must participate in the election in order
 /// for the vote to be considered at all.
 /// See `ThresholdResponse.ThresholdQuorum` in the cw3 spec for details.
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, JsonSchema, Debug)]
 pub struct Threshold {
     pub threshold: Decimal,
     pub quorum: Decimal,

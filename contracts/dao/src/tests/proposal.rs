@@ -374,7 +374,7 @@ mod vote {
             assert_event_attrs(resp.custom_attrs(1), voter, *vote, 1);
 
             total += weight;
-            votes.submit(*vote, Uint128::new(*weight));
+            votes.submit(*vote, Uint128::new(*weight)).unwrap();
 
             let prop = suite.query_proposal(1).unwrap();
             assert_eq!(prop.status, Status::Open);
@@ -408,8 +408,10 @@ mod vote {
             let resp = suite.vote(voter, 1, *vote).unwrap();
             assert_event_attrs(resp.custom_attrs(1), voter, *vote, 1);
 
-            votes.revoke(cases1[idx].2, Uint128::new(cases1[idx].1));
-            votes.submit(*vote, Uint128::new(*weight));
+            votes
+                .revoke(cases1[idx].2, Uint128::new(cases1[idx].1))
+                .unwrap();
+            votes.submit(*vote, Uint128::new(*weight)).unwrap();
 
             let prop = suite.query_proposal(1).unwrap();
             assert_eq!(prop.status, Status::Open);
