@@ -8,7 +8,7 @@ use cw_storage_plus::Bound;
 use cw_utils::maybe_addr;
 use osmo_bindings::{OsmosisMsg, OsmosisQuery};
 
-use crate::helpers::get_and_check_limit;
+use crate::helpers::{calc_staked_value, get_and_check_limit};
 use crate::msg::{
     ClaimsResponse, Duration, ExecuteMsg, GetConfigResponse, InstantiateMsg, QueryMsg, RangeOrder,
     StakedValueResponse, TotalPowerAtHeightResponse, TotalValueResponse,
@@ -318,18 +318,10 @@ pub fn query_staked_value(
         .load(deps.storage, &address)
         .unwrap_or_default();
     let total = STAKED_TOTAL.load(deps.storage).unwrap_or_default();
-    if balance == Uint128::zero() || staked == Uint128::zero() || total == Uint128::zero() {
-        Ok(StakedValueResponse {
-            value: Uint128::zero(),
-        })
-    } else {
-        let value = staked
-            .checked_mul(balance)
-            .map_err(StdError::overflow)?
-            .checked_div(total)
-            .map_err(StdError::divide_by_zero)?;
-        Ok(StakedValueResponse { value })
-    }
+
+    Ok(StakedValueResponse {
+        value: calc_staked_value(balance, staked, total)?,
+    })
 }
 
 pub fn query_total_value(deps: Deps, _env: Env) -> StdResult<TotalValueResponse> {
@@ -360,27 +352,12 @@ pub fn query_range_stakers(
         .map(|item| -> StdResult<(Addr, StakedValueResponse)> {
             let (staker, staked) = item?;
 
-            match balance == Uint128::zero()
-                || staked == Uint128::zero()
-                || total == Uint128::zero()
-            {
-                true => Ok((
-                    staker,
-                    StakedValueResponse {
-                        value: Uint128::zero(),
-                    },
-                )),
-                false => Ok((
-                    staker,
-                    StakedValueResponse {
-                        value: staked
-                            .checked_mul(balance)
-                            .map_err(StdError::overflow)?
-                            .checked_div(total)
-                            .map_err(StdError::divide_by_zero)?,
-                    },
-                )),
-            }
+            Ok((
+                staker,
+                StakedValueResponse {
+                    value: calc_staked_value(balance, staked, total)?,
+                },
+            ))
         })
         .collect();
 
