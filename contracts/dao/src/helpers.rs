@@ -64,7 +64,7 @@ pub fn get_voting_power_at_height(
     let balance: ion_stake::msg::VotingPowerAtHeightResponse = querier.query_wasm_smart(
         staking_contract,
         &ion_stake::msg::QueryMsg::VotingPowerAtHeight {
-            address: address.to_string(),
+            address: address.into_string(),
             height: Some(height),
         },
     )?;
