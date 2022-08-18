@@ -9,23 +9,23 @@ Checksum of the contracts are following.
 ### Compiled with Beaker
 ```
 # Intermediate
-4315eadac6701e9551d787ea1168e981bacc5d3ab415deccfbc89c06231fed48  target/wasm32-unknown-unknown/release/ion_dao.wasm
-57714f726d7d842d36265a05a360571ac39163f4c7905471cf20cdc34862f398  target/wasm32-unknown-unknown/release/ion_stake.wasm
+ccecaa8f25a986b43e4d5f7702fb5304957fe8c1ad3599342cc30ff80312c89e  target/wasm32-unknown-unknown/release/ion_dao.wasm
+29ec9b4fdf84958aeff5790ef1d0902e44544bf243028eec589a0d85e53b401b  target/wasm32-unknown-unknown/release/ion_stake.wasm
 
 # Optimized
-721e52c24e570f0c93481d17ef7c7264b381832bb42e0f412e790d715b1a9a6a  ion_dao.wasm
-65928919ee19a1348a9f7cb7655a0cf5c4d82e3ad8a3d451c341c9324d3a59af  ion_stake.wasm
+c216dfad229b8b06f75f8adb044926eb0c250441a46873f5b5cf7caa153e55f1  ion_dao.wasm
+9306b0ce4aa88ab4e0750bbc42226231c423b8d36ca14da752343a873dbc749a  ion_stake.wasm
 ```
 
 ### Compiled with Docker
 ```
 # Intermediate
-4315eadac6701e9551d787ea1168e981bacc5d3ab415deccfbc89c06231fed48  target/wasm32-unknown-unknown/release/ion_dao.wasm
-57714f726d7d842d36265a05a360571ac39163f4c7905471cf20cdc34862f398  target/wasm32-unknown-unknown/release/ion_stake.wasm
+ccecaa8f25a986b43e4d5f7702fb5304957fe8c1ad3599342cc30ff80312c89e  target/wasm32-unknown-unknown/release/ion_dao.wasm
+29ec9b4fdf84958aeff5790ef1d0902e44544bf243028eec589a0d85e53b401b  target/wasm32-unknown-unknown/release/ion_stake.wasm
 
 # Optimized
-721e52c24e570f0c93481d17ef7c7264b381832bb42e0f412e790d715b1a9a6a  ion_dao.wasm
-65928919ee19a1348a9f7cb7655a0cf5c4d82e3ad8a3d451c341c9324d3a59af  ion_stake.wasm
+c216dfad229b8b06f75f8adb044926eb0c250441a46873f5b5cf7caa153e55f1  ion_dao.wasm
+9306b0ce4aa88ab4e0750bbc42226231c423b8d36ca14da752343a873dbc749a  ion_stake.wasm
 ```
 
 ## Context
