@@ -3,8 +3,8 @@ Urgent announcement regarding Proposal 321:
 
 The testnet standard parameter values in the proposal are incorrect due to typo issues. If the proposal is passed as is, the following problems might occur:
 
-1. Short deposit / voting period makes attacker to easily rush through the malicious proposal.
-2. Low proposal deposit makes easier to spam the DAO.
+1. Short deposit / voting period allows the attacker to rush through the malicious proposal easily.
+2. Low proposal deposit makes it easier to spam the DAO.
 
 Therefore, we're submitting a new Proposal #322 with the revised parameters which we agreed with the Osmosis team as below:
 
@@ -30,7 +30,7 @@ Vote **NO** on this proposal if you do not want to.
 ## Context
 
 The initial ION treasury will consist of the 16572 IONs clawed back from never-active accounts from the Osmosis genesis airdrop. In Prop 120, the Osmosis DAO agreed that the Osmosis Community pool should transfer these to the ION treasury when possible and safe. The activation of the ION DAO contracts on Osmosis mainnet will serve as the trigger for this transfer.  
-On testnet, about 258 IONs(almost 1.5%) were staked on the test net where it was challenging to receive faucets, 640 suggestions were made for a test, and community members shared 980 ideas and suggestions and bug reports.  
+About 258 IONs(almost 1.5%) were staked on the testnet where it was challenging to receive faucets, 640 suggestions were made for a test, and community members shared 980 ideas and suggestions and bug reports.  
 
 Website: [https://ion.wtf](https://ion.wtf)  
 Commonwealth Thread: [https://commonwealth.im/osmosis/discussion/4956-proposal-put-ion-dao-contracts-on-chain-on-osmosis](https://commonwealth.im/osmosis/discussion/4956-proposal-put-ion-dao-contracts-on-chain-on-osmosis)
@@ -53,7 +53,7 @@ The similar DAO DAO contracts have been safely used on Juno for a number of mont
 ## Scope of Implementation
 
 ### ION Landing Page
-* Develop ION’s landing page using 3D modeling and Three.js (React-fiber)
+* Develop ION’s landing page using 3D modeling and Three.js (React Fiber)
 * Provide a wasm-based token balance checking feature
 
 ### ION Staking Page
@@ -72,7 +72,7 @@ The similar DAO DAO contracts have been safely used on Juno for a number of mont
 * Voting (for 7 days but in testnet 10 min)
 * Enable identification of the proposal creator and its description 
 * Visualize proposal messages (send, execute, burn, etc.)
-* The quorum is 50%, and the Threshold is 50%
+* The quorum is 50%, and the threshold is 50%
 
 ## About MANYTHINGS
 MANYTHINGS is a “Builder-oriented DAO” based in South Korea. At large, we strive to persuade talented Web2.0 builders to join us and pioneer the Web3.0 movement. Various organizations under the MANYTHINGS umbrella, including Alphaworks, are already creating their presence in the NFT space.  
