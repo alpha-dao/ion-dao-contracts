@@ -28,7 +28,7 @@ propose () {
   $DAEMON tx gov submit-proposal wasm-store "$1" --title "$2" --description "$3" \
     --run-as "$ACCOUNT_ADDRESS" \
     --from "$ACCOUNT" --keyring-backend "$KEYRING" --chain-id "$CHAIN_ID" -y -b block \
-    --gas 20000000 --gas-prices 0.025uosmo --deposit 500000000uosmo --node "$NODE" --output json \
+    --gas 20000000 --gas-prices 0.025uosmo --deposit 1600000000uosmo --node "$NODE" --output json \
     | jq -c '.logs[0].events[] | select(.type | contains("submit_proposal")) | .attributes[] | select(.key | contains("proposal_id")) | .value | tonumber'
 }
 

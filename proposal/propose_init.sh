@@ -40,7 +40,7 @@ propose () {
   $DAEMON tx gov submit-proposal instantiate-contract "$1" "$2" --label "ION governance contract" --no-admin --title "$3" --description "$4" \
     --run-as "$ACCOUNT_ADDRESS" \
     --from "$ACCOUNT" --keyring-backend "$KEYRING" --chain-id "$CHAIN_ID" -y -b block \
-    --gas 20000000 --gas-prices 0.025uosmo --deposit 500000000uosmo --node "$NODE" --output json
+    --gas 20000000 --gas-prices 0.025uosmo --deposit 1600000000uosmo --node "$NODE" --output json
 }
 
 ##Submit proposal and store wasm binary including a deposit amount
