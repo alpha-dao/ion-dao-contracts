@@ -1,7 +1,30 @@
 ## Summary
-The ION DAO has successfully gone through testnet and is now ready to launch onto the Osmosis mainnet.
+Urgent announcement regarding Proposal 321:
 
-Vote **YES** on this proposal if you want to instantiate ION DAO contract on Osmosis.  
+The testnet standard parameter values in the proposal are incorrect due to typo issues. If the proposal is passed as is, the following problems might occur:
+
+1. Short deposit / voting period makes attacker to easily rush through the malicious proposal.
+2. Low proposal deposit makes easier to spam the DAO.
+
+Therefore, we're submitting a new Proposal #322 with the revised parameters which we agreed with the Osmosis team as below:
+
+Revised parameters
+* unstaking period
+  * `3600s` -> `1209600s` (= 14 Days)
+* quorum
+  * `0.3` -> `0.5` (= 50%)
+* deposit period
+  * `600s` -> `604800s` (= 7 Days)
+* voting period
+  * `800s` -> `604800s` (= 7 Days)
+* proposal deposit
+  * `100 uion` -> `500000 uion` (= 0.5 ION)
+* minimum proposal deposit
+  * `50 uion` -> `50000 uion` (= 0.05 ION)
+
+We would like to request the community to kindly vote NO to Proposal #321, consider #322 as our proposal to instantiate ION DAO and cast your votes accordingly.
+
+Vote **YES** on this proposal if you want to instantiate ION DAO contract on Osmosis with revised parameters.  
 Vote **NO** on this proposal if you do not want to.  
 
 ## Context

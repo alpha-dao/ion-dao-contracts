@@ -46,6 +46,6 @@ propose () {
 ##Submit proposal and store wasm binary including a deposit amount
 DAO_CONTRACT_INIT_MSG=$(cat ./proposal/init_dao.json | jq -c '.gov_token.create.stake_contract_code_id = '"$STAKE_CONTRACT_CODE_ID")
 DAO_PROPOSAL_DESC=$(cat ./proposal/init_dao.md)
-DAO_PROPOSAL=$(propose "$DAO_CONTRACT_CODE_ID" "$DAO_CONTRACT_INIT_MSG" "[ION DAO] Initialize" "$DAO_PROPOSAL_DESC")
+DAO_PROPOSAL=$(propose "$DAO_CONTRACT_CODE_ID" "$DAO_CONTRACT_INIT_MSG" "Revised - [ION DAO] initialize" "$DAO_PROPOSAL_DESC")
 echo "Proposal for dao contract has been submitted. Prop ID $DAO_PROPOSAL"
 $DAEMON query gov proposal "$DAO_PROPOSAL" --node "$NODE" --output json | jq '. | .content.wasm_byte_code = "~~ skipped ~~"'
