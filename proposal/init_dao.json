@@ -7,17 +7,17 @@
       "label": "ION staking contract for governance",
       "stake_contract_code_id": 0,
       "unstaking_duration": {
-        "time": 3600
+        "time": 1209600
       }
     }
   },
   "threshold": {
-    "quorum": "0.3",
+    "quorum": "0.5",
     "threshold": "0.5",
     "veto_threshold": "0.3"
   },
-  "deposit_period": { "time": 600 },
-  "voting_period": { "time": 800 },
-  "proposal_deposit_amount": "100",
-  "proposal_deposit_min_amount": "50"
+  "deposit_period": { "time": 604800 },
+  "voting_period": { "time": 604800 },
+  "proposal_deposit_amount": "500000",
+  "proposal_deposit_min_amount": "50000"
 }
