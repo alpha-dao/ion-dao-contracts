@@ -75,7 +75,7 @@ The similar DAO DAO contracts have been safely used on Juno for a number of mont
 * The quorum is 50%, and the threshold is 50%
 
 ## About MANYTHINGS
-MANYTHINGS is a “Builder-oriented DAO” based in South Korea. At large, we strive to persuade talented Web2.0 builders to join us and pioneer the Web3.0 movement. Various organizations under the MANYTHINGS umbrella, including Alphaworks, are already creating their presence in the NFT space.  
-In developing the ION DAO, Alphaworks aims to set Osmosis’s vibrant activity as our milestone. Furthermore, by contributing to the ION ecosystem in the future, we plan to actively collaborate on Osmosis to solidify it as a leading layer 1 protocol.  
+MANYTHINGS is a “Builder-oriented DAO” based in South Korea. At large, we strive to persuade talented Web2.0 builders to join us and pioneer the Web3.0 movement. Various organizations under the MANYTHINGS umbrella are already creating their presence in the NFT space.  
+In developing the ION DAO, manythings aims to set Osmosis’s vibrant activity as our milestone. Furthermore, by contributing to the ION ecosystem in the future, we plan to actively collaborate on Osmosis to solidify it as a leading layer 1 protocol.  
 
 Team website: [Manythings](https://manythings.xyz/)
